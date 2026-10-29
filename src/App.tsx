@@ -2,10 +2,11 @@ import { useState, type ReactNode } from "react"
 
 const heroImage =
   "https://images.unsplash.com/photo-1756575527484-2839c593ed84?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&q=88&w=1800"
+const logoImage = `${import.meta.env.BASE_URL}petito-car-service-logo.jpg`
 
 type IconName = "arrow" | "car" | "check" | "clock" | "engine" | "location" | "mail" | "menu" | "motorcycle" | "phone" | "quote" | "shield" | "tool" | "whatsapp" | "x"
 
-function Icon({ name, size = 24 }: { name: IconName size?: number }) {
+function Icon({ name, size = 24 }: { name: IconName; size?: number }) {
   const paths: Record<IconName, ReactNode> = {
     arrow: (
       <>
@@ -171,7 +172,7 @@ export default function App() {
         >
           <img
             className="brand-logo"
-            src="/petito-car-service-logo.jpg"
+            src={logoImage}
             alt="Petito Car Service logo"
             width="54"
             height="54"
@@ -612,7 +613,7 @@ export default function App() {
         <a className="brand footer-brand" href="#home">
           <img
             className="brand-logo"
-            src="/petito-car-service-logo.jpg"
+            src={logoImage}
             alt="Petito Car Service logo"
             width="54"
             height="54"

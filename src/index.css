@@ -76,6 +76,7 @@
   --ink: #111315;
   --ink-soft: #1a1d20;
   --paper: #f2f0eb;
+  --paper-soft: #e9e6df;
   --white: #ffffff;
   --muted: #6e7173;
   --line: #d7d4ce;
@@ -322,6 +323,189 @@ footer > small { border-top: 1px solid #292b2d; font-size: 9px; grid-column: 1/-
 .floating-whatsapp { align-items: center; background: var(--green); bottom: 24px; border-radius: 50%; box-shadow: 0 8px 24px rgba(0,0,0,.25); color: white; display: flex; height: 54px; justify-content: center; position: fixed; right: 24px; transition: transform .2s; width: 54px; z-index: 12; }
 .floating-whatsapp:hover { transform: scale(1.07); }
 
+.brand-logo {
+  border-radius: 0;
+  height: 48px;
+  width: 48px;
+}
+.topbar {
+  border-bottom: 1px solid rgba(17, 19, 21, .09);
+  height: 82px;
+}
+.brand { gap: 14px; }
+.brand strong { font-size: 25px; letter-spacing: .06em; }
+.nav-links { gap: clamp(24px, 3.2vw, 52px); }
+.nav-links a { font-size: 12px; }
+.header-phone > span:first-child { border-color: var(--line); }
+.hero { min-height: min(760px, calc(100svh - 82px)); }
+.hero-image { object-position: 60% center; }
+.hero-shade {
+  background: linear-gradient(90deg, rgba(10,12,14,.91) 0%, rgba(10,12,14,.72) 42%, rgba(10,12,14,.12) 82%);
+}
+.hero-content {
+  margin-left: clamp(30px, 8vw, 125px);
+  max-width: 790px;
+  padding: clamp(84px, 9vh, 118px) 0 158px;
+}
+.hero h1 {
+  font-size: clamp(68px, 7vw, 100px);
+  letter-spacing: -.045em;
+  line-height: .88;
+  margin: 30px 0 28px;
+}
+.hero-content > p { max-width: 510px; }
+.button {
+  min-height: 54px;
+  padding-inline: 27px;
+}
+.button:focus-visible,
+.nav-links a:focus-visible,
+.brand:focus-visible,
+.header-phone:focus-visible,
+.text-link:focus-visible,
+.hero-card > a:focus-visible,
+.service-card a:focus-visible,
+footer a:focus-visible,
+.floating-whatsapp:focus-visible,
+.menu-toggle:focus-visible,
+.faq-item button:focus-visible,
+.contact-details a:focus-visible {
+  outline: 2px solid var(--orange);
+  outline-offset: 4px;
+}
+.brand-logo { border-radius: 50%; }
+.eyebrow,
+.section-label {
+  font-size: 11px;
+  letter-spacing: .08em;
+  text-transform: none;
+}
+.hero h1,
+h2 {
+  letter-spacing: -.04em;
+  text-transform: none;
+}
+.intro {
+  column-gap: clamp(28px, 4vw, 64px);
+  padding: clamp(88px, 10vw, 140px) clamp(30px, 8vw, 125px);
+}
+.intro h2,
+.why-content h2,
+.process h2,
+.faq h2 {
+  font-size: clamp(42px, 4.7vw, 66px);
+  line-height: .98;
+}
+.intro-copy .intro-story {
+  font-size: 23px;
+  text-transform: none;
+}
+.intro-copy p { font-size: 13px; }
+.text-link { font-size: 12px; }
+.services {
+  padding: clamp(82px, 9vw, 120px) clamp(30px, 8vw, 125px);
+}
+.section-heading { margin-bottom: 48px; }
+.section-heading h2 {
+  font-size: clamp(44px, 5vw, 70px);
+  line-height: .98;
+}
+.section-heading h2 span { color: #aaa9a5; }
+.section-heading > p { max-width: 350px; }
+.services-grid {
+  border-color: #3b3e40;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.service-card {
+  border-color: #3b3e40;
+  min-height: 285px;
+  padding: 32px;
+}
+.service-index { display: none; }
+.service-icon { margin: 18px 0 25px; }
+.service-card h3,
+.process h3,
+.review-card h3,
+.why-content li strong {
+  text-transform: none;
+}
+.service-card h3 { font-size: 24px; }
+.service-card p,
+.why-content > p,
+.review-card p,
+.faq-item p { font-size: 13px; }
+.why-image { min-height: 620px; }
+.why-image img { filter: saturate(.72); }
+.why-content { padding-inline: clamp(40px, 7vw, 110px); }
+.why-content li { gap: 16px; padding: 18px 0; }
+.why-content li > span { flex: 0 0 30px; }
+.why-content li strong { font-size: 16px; }
+.why-content li small { font-size: 11px; }
+.process {
+  background: var(--paper);
+  border-block: 1px solid var(--line);
+  color: var(--ink);
+  padding: clamp(82px, 9vw, 120px) clamp(30px, 8vw, 125px);
+}
+.process .section-label { color: var(--orange); opacity: 1; }
+.process h2 { margin: 18px 0 48px; }
+.process-grid { border-color: var(--line); }
+.process-grid article { border-color: var(--line); }
+.process-grid span { color: var(--orange); }
+.process-grid h3 { margin-top: 40px; }
+.process-grid p { color: var(--muted); font-size: 12px; }
+.testimonials {
+  padding: clamp(82px, 9vw, 120px) clamp(30px, 8vw, 125px);
+}
+.review-grid {
+  border-block: 1px solid var(--line);
+  gap: 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.review-card {
+  background: transparent;
+  border-right: 1px solid var(--line);
+  padding: 34px clamp(22px, 3vw, 42px);
+}
+.review-card:first-child { padding-left: 0; }
+.review-card:last-child { border-right: 0; padding-right: 0; }
+.stars { margin: 22px 0 16px; }
+.review-card h3 { font-size: 23px; }
+.review-card p { min-height: 78px; }
+.review-card > strong {
+  font-size: 10px;
+  letter-spacing: .04em;
+  text-transform: none;
+}
+.faq {
+  background: var(--paper-soft);
+  gap: clamp(48px, 8vw, 112px);
+  padding: clamp(82px, 9vw, 120px) clamp(30px, 8vw, 125px);
+}
+.faq-item button {
+  font-size: 18px;
+  text-transform: none;
+}
+.faq-item > div { transition: max-height .35s ease; }
+.faq-item.open > div { max-height: 160px; }
+.contact {
+  gap: clamp(40px, 6vw, 88px);
+  padding: clamp(82px, 9vw, 120px) clamp(30px, 8vw, 125px);
+}
+.contact-copy { padding-right: clamp(35px, 6vw, 80px); }
+.contact h2 {
+  font-size: clamp(48px, 6vw, 78px);
+  line-height: .96;
+}
+.contact-details { padding-left: 0; }
+.contact-details small { letter-spacing: .06em; }
+.contact-details strong { text-transform: none; }
+footer {
+  border-top: 1px solid #292b2d;
+  padding: 36px clamp(30px, 8vw, 125px);
+}
+.floating-whatsapp { box-shadow: 0 5px 16px rgba(0,0,0,.2); }
+
 @media (max-width: 900px) {
   .header-phone { display: none; }
   .menu-toggle { display: block; }
@@ -387,6 +571,15 @@ footer > small { border-top: 1px solid #292b2d; font-size: 9px; grid-column: 1/-
   footer { align-items: start; grid-template-columns: 1fr; }
   footer > div { flex-wrap: wrap; }
   footer > small { grid-column: 1; }
+  .process-grid article { border-bottom-color: var(--line); }
+}
+
+@media (max-width: 360px) {
+  .hero-trust {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
