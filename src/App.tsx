@@ -172,7 +172,11 @@ export default function App() {
           <img
             className="brand-logo"
             src="/petito-car-service-logo.jpg"
-            alt=""
+            alt="Petito Car Service logo"
+            width="54"
+            height="54"
+            loading="eager"
+            decoding="async"
           />
           <span>
             <strong>PETITO CAR</strong>
@@ -223,6 +227,11 @@ export default function App() {
             className="hero-image"
             src={heroImage}
             alt="Meccanico al lavoro in un’officina automobilistica"
+            loading="eager"
+            fetchPriority="high"
+            decoding="async"
+            width="1800"
+            height="1200"
           />
           <div className="hero-shade" />
           <div className="hero-content">
@@ -336,6 +345,10 @@ export default function App() {
             <img
               src={heroImage}
               alt="Lavorazione professionale all’interno dell’officina"
+              loading="lazy"
+              decoding="async"
+              width="1800"
+              height="1200"
             />
             <div className="experience-badge">
               <strong>100%</strong>
@@ -600,7 +613,11 @@ export default function App() {
           <img
             className="brand-logo"
             src="/petito-car-service-logo.jpg"
-            alt=""
+            alt="Petito Car Service logo"
+            width="54"
+            height="54"
+            loading="lazy"
+            decoding="async"
           />
           <span>
             <strong>PETITO CAR</strong>
