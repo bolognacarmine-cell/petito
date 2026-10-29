@@ -1,0 +1,10 @@
+{
+  "description": "Un’app in italiano che aiuta gli utenti a trovare informazioni e completare attività online in modo semplice e accessibile.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
