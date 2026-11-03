@@ -3,10 +3,12 @@ import { useState, type CSSProperties, type ReactNode } from "react"
 const heroImage =
   "https://images.unsplash.com/photo-1756575527484-2839c593ed84?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&q=88&w=1800"
 const logoImage = `${import.meta.env.BASE_URL}petito-car-service-logo.webp`
+const assetUrl = (path: string) =>
+  new URL(`${import.meta.env.BASE_URL}${path}`, document.baseURI).href
 const serviceImage = (index: number) =>
-  `${import.meta.env.BASE_URL}assets/images/services/service-${index}.webp`
+  assetUrl(`assets/images/services/service-${index}.webp`)
 const serviceImageMobile = (index: number) =>
-  `${import.meta.env.BASE_URL}assets/images/services/service-${index}-mobile.webp`
+  assetUrl(`assets/images/services/service-${index}-mobile.webp`)
 
 type IconName = "arrow" | "car" | "check" | "clock" | "engine" | "location" | "mail" | "menu" | "motorcycle" | "phone" | "quote" | "shield" | "tool" | "whatsapp" | "x"
 
