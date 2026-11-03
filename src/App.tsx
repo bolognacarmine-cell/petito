@@ -1,8 +1,10 @@
-import { useState, type ReactNode } from "react"
+import { useState, type CSSProperties, type ReactNode } from "react"
 
 const heroImage =
   "https://images.unsplash.com/photo-1756575527484-2839c593ed84?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&q=88&w=1800"
 const logoImage = `${import.meta.env.BASE_URL}petito-car-service-logo.jpg`
+const serviceImage = (index: number) =>
+  `${import.meta.env.BASE_URL}assets/images/services/service-${index}.webp`
 
 type IconName = "arrow" | "car" | "check" | "clock" | "engine" | "location" | "mail" | "menu" | "motorcycle" | "phone" | "quote" | "shield" | "tool" | "whatsapp" | "x"
 
@@ -108,31 +110,37 @@ const services = [
     icon: "engine" as const,
     title: "Meccanica generale",
     text: "Diagnosi e riparazioni per motore, trasmissione, frizione e distribuzione.",
+    image: serviceImage(1),
   },
   {
     icon: "car" as const,
     title: "Tagliando auto",
     text: "Manutenzione programmata nel rispetto delle specifiche della casa madre.",
+    image: serviceImage(2),
   },
   {
     icon: "motorcycle" as const,
     title: "Assistenza moto",
     text: "Tagliandi, freni, trasmissione e messa a punto per scooter e motocicli.",
+    image: serviceImage(3),
   },
   {
     icon: "tool" as const,
     title: "Freni e sospensioni",
     text: "Controllo e sostituzione di dischi, pastiglie, ammortizzatori e componenti.",
+    image: serviceImage(4),
   },
   {
     icon: "shield" as const,
     title: "Diagnosi elettronica",
     text: "Strumentazione professionale per individuare guasti e anomalie con precisione.",
+    image: serviceImage(5),
   },
   {
     icon: "clock" as const,
     title: "Controlli stagionali",
     text: "Check-up completi prima di un viaggio o al cambio di stagione.",
+    image: serviceImage(6),
   },
 ]
 
@@ -334,7 +342,13 @@ export default function App() {
           </div>
           <div className="services-grid">
             {services.map((service, index) => (
-              <article className="service-card" key={service.title}>
+              <article
+                className="service-card"
+                key={service.title}
+                style={
+                  { "--service-image": `url("${service.image}")` } as CSSProperties
+                }
+              >
                 <span className="service-index">0{index + 1}</span>
                 <span className="service-icon">
                   <Icon name={service.icon} size={30} />
