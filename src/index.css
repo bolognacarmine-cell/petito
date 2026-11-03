@@ -558,7 +558,15 @@ footer {
   .menu-toggle { margin-right: -8px; padding: 10px; }
   .hero { min-height: 640px; }
   .hero-image { object-position: 68% center; }
-  .hero-shade { background: linear-gradient(90deg, rgba(10,12,14,.96), rgba(10,12,14,.65)); }
+  .hero-video, .hero-fallback { filter: brightness(1.14) saturate(1.06); }
+  .hero-shade {
+    background: linear-gradient(
+      180deg,
+      rgba(10,12,14,.78) 0%,
+      rgba(10,12,14,.62) 45%,
+      rgba(10,12,14,.5) 100%
+    );
+  }
   .hero-content { margin: 0; padding: 72px 18px 150px; }
   .hero h1 { font-size: clamp(44px, 13.5vw, 64px); line-height: .9; }
   .hero-content > p { font-size: 15px; }
