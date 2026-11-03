@@ -224,8 +224,19 @@ export default function App() {
 
       <main>
         <section className="hero" id="home">
+          <video
+            className="hero-image hero-video"
+            src="/hero-petito-car-service.mp4"
+            poster={heroImage}
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="auto"
+            aria-label="Meccanico al lavoro in un’officina automobilistica"
+          />
           <img
-            className="hero-image"
+            className="hero-image hero-fallback"
             src={heroImage}
             alt="Meccanico al lavoro in un’officina automobilistica"
             loading="eager"
