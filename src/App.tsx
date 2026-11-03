@@ -2,9 +2,11 @@ import { useState, type CSSProperties, type ReactNode } from "react"
 
 const heroImage =
   "https://images.unsplash.com/photo-1756575527484-2839c593ed84?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&q=88&w=1800"
-const logoImage = `${import.meta.env.BASE_URL}petito-car-service-logo.jpg`
+const logoImage = `${import.meta.env.BASE_URL}petito-car-service-logo.webp`
 const serviceImage = (index: number) =>
   `${import.meta.env.BASE_URL}assets/images/services/service-${index}.webp`
+const serviceImageMobile = (index: number) =>
+  `${import.meta.env.BASE_URL}assets/images/services/service-${index}-mobile.webp`
 
 type IconName = "arrow" | "car" | "check" | "clock" | "engine" | "location" | "mail" | "menu" | "motorcycle" | "phone" | "quote" | "shield" | "tool" | "whatsapp" | "x"
 
@@ -111,36 +113,42 @@ const services = [
     title: "Meccanica generale",
     text: "Diagnosi e riparazioni per motore, trasmissione, frizione e distribuzione.",
     image: serviceImage(1),
+    imageMobile: serviceImageMobile(1),
   },
   {
     icon: "car" as const,
     title: "Tagliando auto",
     text: "Manutenzione programmata nel rispetto delle specifiche della casa madre.",
     image: serviceImage(2),
+    imageMobile: serviceImageMobile(2),
   },
   {
     icon: "motorcycle" as const,
     title: "Assistenza moto",
     text: "Tagliandi, freni, trasmissione e messa a punto per scooter e motocicli.",
     image: serviceImage(3),
+    imageMobile: serviceImageMobile(3),
   },
   {
     icon: "tool" as const,
     title: "Freni e sospensioni",
     text: "Controllo e sostituzione di dischi, pastiglie, ammortizzatori e componenti.",
     image: serviceImage(4),
+    imageMobile: serviceImageMobile(4),
   },
   {
     icon: "shield" as const,
     title: "Diagnosi elettronica",
     text: "Strumentazione professionale per individuare guasti e anomalie con precisione.",
     image: serviceImage(5),
+    imageMobile: serviceImageMobile(5),
   },
   {
     icon: "clock" as const,
     title: "Controlli stagionali",
     text: "Check-up completi prima di un viaggio o al cambio di stagione.",
     image: serviceImage(6),
+    imageMobile: serviceImageMobile(6),
   },
 ]
 
@@ -311,8 +319,8 @@ export default function App() {
           </div>
           <div className="intro-copy">
             <p className="intro-story">
-              Angelo “Rob” “Nott” Petito e Tommaso: due generazioni, un’unica
-              passione per la meccanica.
+              Angelo e Tommaso Petito: due generazioni, un’unica passione per la
+              meccanica.
             </p>
             <p>
               Petito Car Service è un’officina meccatronica di Marcianise. Ci
@@ -346,7 +354,10 @@ export default function App() {
                 className="service-card"
                 key={service.title}
                 style={
-                  { "--service-image": `url("${service.image}")` } as CSSProperties
+                  {
+                    "--service-image": `url("${service.image}")`,
+                    "--service-image-mobile": `url("${service.imageMobile}")`,
+                  } as CSSProperties
                 }
               >
                 <span className="service-index">0{index + 1}</span>
