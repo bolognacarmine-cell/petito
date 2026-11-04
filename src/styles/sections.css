@@ -382,6 +382,11 @@
       transform 600ms var(--ease);
   }
 
+  .service-card--no-image::before {
+    background-image: none;
+    opacity: 0;
+  }
+
   .service-card::after {
     background: linear-gradient(
       165deg,

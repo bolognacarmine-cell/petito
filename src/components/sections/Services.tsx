@@ -40,12 +40,16 @@ export function Services() {
       <ul className="services-grid" ref={gridRef as never}>
         {services.map((service) => (
           <li
-            className="service-card"
+            className={`service-card${!service.image ? ' service-card--no-image' : ''}`}
             key={service.title}
             style={
               {
-                "--service-image": `url("${service.image}")`,
-                "--service-image-mobile": `url("${service.imageMobile}")`,
+                ...(service.image
+                  ? { "--service-image": `url("${service.image}")` }
+                  : {}),
+                ...(service.imageMobile
+                  ? { "--service-image-mobile": `url("${service.imageMobile}")` }
+                  : {}),
               } as CSSProperties
             }
           >

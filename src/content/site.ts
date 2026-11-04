@@ -19,8 +19,8 @@ export type Service = {
   icon: IconName
   title: string
   text: string
-  image: string
-  imageMobile: string
+  image?: string
+  imageMobile?: string
 }
 
 export type Faq = {
@@ -87,8 +87,6 @@ export const services: Service[] = [
     icon: "shield",
     title: "Diagnosi elettronica",
     text: "Strumentazione professionale per individuare guasti e anomalie con precisione.",
-    image: serviceImage(5),
-    imageMobile: serviceImageMobile(5),
   },
   {
     icon: "clock",

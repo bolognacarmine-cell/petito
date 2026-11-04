@@ -255,6 +255,11 @@
     background-image: var(--service-image-mobile, var(--service-image));
   }
 
+  .service-card--no-image::before {
+    background-image: none;
+    opacity: 0;
+  }
+
   .why-image {
     min-height: 340px;
   }
