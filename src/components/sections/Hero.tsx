@@ -1,17 +1,31 @@
+import { useRef } from "react"
 import { ActionLink } from "@/components/ui/ActionLink"
 import { Eyebrow } from "@/components/ui/Eyebrow"
 import { Icon } from "@/components/Icon"
 import { contact, media } from "@/content/site"
 import { usePrefersReducedMotion } from "@/hooks/useUiPreferences"
+import { useHeroEntrance } from "@/hooks/useHeroEntrance"
 
-const trustPoints = [
-  "Preventivi chiari",
-  "Ricambi di qualità",
-  "Auto e moto",
-]
+const trustPoints = ["Preventivi chiari", "Ricambi di qualità", "Auto e moto"]
 
 export function Hero() {
   const reducedMotion = usePrefersReducedMotion()
+
+  const eyebrowRef = useRef<HTMLElement>(null)
+  const headlineRef = useRef<HTMLElement>(null)
+  const leadRef = useRef<HTMLElement>(null)
+  const actionsRef = useRef<HTMLElement>(null)
+  const trustRef = useRef<HTMLElement>(null)
+  const cardRef = useRef<HTMLElement>(null)
+
+  useHeroEntrance({
+    headlineRef,
+    leadRef,
+    actionsRef,
+    trustRef,
+    cardRef,
+    eyebrowRef,
+  })
 
   return (
     <section className="hero" id="home" aria-labelledby="hero-title">
@@ -45,17 +59,19 @@ export function Hero() {
 
       <div className="hero-inner">
         <div className="hero-content">
-          <Eyebrow tone="on-dark">Meccatronica · Marcianise</Eyebrow>
-          <h1 className="hero-title" id="hero-title">
+          <div ref={eyebrowRef as never}>
+            <Eyebrow tone="on-dark">Meccatronica · Marcianise</Eyebrow>
+          </div>
+          <h1 className="hero-title" id="hero-title" ref={headlineRef as never}>
             <span>La tua strada,</span>
             <em>la nostra cura.</em>
           </h1>
-          <p className="hero-lead">
+          <p className="hero-lead" ref={leadRef as never}>
             Riparazione e manutenzione meccanica, elettrica ed elettronica di
             autoveicoli. Competenza e trasparenza per ogni intervento.
           </p>
 
-          <div className="hero-actions">
+          <div className="hero-actions" ref={actionsRef as never}>
             <ActionLink href="#contatti" icon="arrow">
               Prenota un controllo
             </ActionLink>
@@ -64,7 +80,7 @@ export function Hero() {
             </ActionLink>
           </div>
 
-          <ul className="hero-trust">
+          <ul className="hero-trust" ref={trustRef as never}>
             {trustPoints.map((point) => (
               <li key={point}>
                 <Icon name="check" size={17} />
@@ -75,7 +91,7 @@ export function Hero() {
         </div>
       </div>
 
-      <a className="hero-card" href={contact.phone.href}>
+      <a className="hero-card" href={contact.phone.href} ref={cardRef as never}>
         <span className="hero-card-icon" aria-hidden="true">
           <Icon name="clock" size={26} />
         </span>

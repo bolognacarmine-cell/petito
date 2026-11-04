@@ -1,26 +1,43 @@
 import type { CSSProperties } from "react"
+import { useRef } from "react"
 import { Icon } from "@/components/Icon"
 import { Eyebrow } from "@/components/ui/Eyebrow"
+import { SectionReveal } from "@/components/ui/SectionReveal"
 import { services } from "@/content/site"
+import { useScrollReveal, useStaggerReveal } from "@/hooks"
 
 export function Services() {
+  const headingRef = useRef<HTMLElement>(null)
+  const gridRef = useRef<HTMLElement>(null)
+
+  useScrollReveal({ ref: headingRef, fromY: 40, duration: 0.6 })
+  useStaggerReveal({
+    containerRef: gridRef,
+    selector: ".service-card",
+    fromY: 40,
+    duration: 0.5,
+    stagger: 0.1,
+  })
+
   return (
     <section className="services" id="servizi" aria-labelledby="services-title">
       <div className="section-heading">
-        <div>
-          <Eyebrow tone="on-dark">Cosa facciamo</Eyebrow>
-          <h2 className="section-title" id="services-title">
-            <span>Servizi completi.</span>
-            <span className="title-line">Soluzioni concrete.</span>
-          </h2>
-        </div>
-        <p className="section-intro">
-          Un unico punto di riferimento a Marcianise per la manutenzione e la
-          riparazione di auto, moto e scooter.
-        </p>
+        <SectionReveal fromY={40} duration={0.6}>
+          <div ref={headingRef as never}>
+            <Eyebrow tone="on-dark">Cosa facciamo</Eyebrow>
+            <h2 className="section-title" id="services-title">
+              <span>Servizi completi.</span>
+              <span className="title-line">Soluzioni concrete.</span>
+            </h2>
+            <p className="section-intro">
+              Un unico punto di riferimento a Marcianise per la manutenzione e
+              la riparazione di auto, moto e scooter.
+            </p>
+          </div>
+        </SectionReveal>
       </div>
 
-      <ul className="services-grid">
+      <ul className="services-grid" ref={gridRef as never}>
         {services.map((service) => (
           <li
             className="service-card"
