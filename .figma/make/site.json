@@ -3,7 +3,7 @@
   "description": "Officina meccatronica a Marcianise (CE): manutenzione e riparazione di auto, moto e scooter. Tagliandi, diagnosi elettronica, freni e preventivi chiari. Chiama 0823 830658.",
   "language": "it",
   "robots": {
-    "index": false
+    "index": true
   },
   "icons": {
     "icon": "./favicon.svg"
