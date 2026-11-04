@@ -139,11 +139,11 @@ const services = [
     imageMobile: serviceImageMobile(10),
   },
   {
-    icon: "engine" as const,
-    title: "Meccanica generale",
-    text: "Diagnosi e riparazioni per motore, trasmissione, frizione e distribuzione.",
-    image: serviceImage(1),
-    imageMobile: serviceImageMobile(1),
+    icon: "shield" as const,
+    title: "Diagnosi elettronica",
+    text: "Strumentazione professionale per individuare guasti e anomalie con precisione.",
+    image: serviceImage(5),
+    imageMobile: serviceImageMobile(5),
   },
   {
     icon: "clock" as const,
@@ -151,13 +151,6 @@ const services = [
     text: "Check-up completi prima di un viaggio o al cambio di stagione.",
     image: serviceImage(11),
     imageMobile: serviceImageMobile(11),
-  },
-  {
-    icon: "shield" as const,
-    title: "Diagnosi elettronica",
-    text: "Strumentazione professionale per individuare guasti e anomalie con precisione.",
-    image: serviceImage(5),
-    imageMobile: serviceImageMobile(5),
   },
 ]
 
