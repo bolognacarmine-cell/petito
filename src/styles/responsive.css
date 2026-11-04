@@ -1,0 +1,381 @@
+/* ---------------------------------------------------------------------------
+   Responsive rules — desktop-first, matching the original breakpoints.
+--------------------------------------------------------------------------- */
+
+@media (max-width: 1100px) {
+  .intro {
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.2fr);
+  }
+
+  .intro .eyebrow {
+    grid-column: 1 / -1;
+    padding-top: 0;
+  }
+
+  .process-grid li {
+    min-height: 0;
+    padding-block: var(--space-5);
+  }
+
+  .process-grid h3 {
+    margin-top: var(--space-5);
+  }
+}
+
+@media (max-width: 900px) {
+  /* Header */
+  .header-phone {
+    display: none;
+  }
+
+  .menu-toggle {
+    display: grid;
+  }
+
+  .nav-links {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+    z-index: 2;
+    display: none;
+    flex-direction: column;
+    gap: 0;
+    align-items: stretch;
+    max-height: calc(100svh - var(--header-h));
+    padding: var(--space-2) var(--gutter) var(--space-4);
+    overflow-y: auto;
+    border-bottom: 1px solid var(--line);
+    background: var(--paper);
+    box-shadow: var(--shadow-md);
+  }
+
+  .nav-links.is-open {
+    display: flex;
+  }
+
+  .nav-links a {
+    min-height: 52px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .nav-links a::after {
+    display: none;
+  }
+
+  /* Hero */
+  .hero-inner {
+    padding-bottom: clamp(180px, 30vh, 220px);
+  }
+
+  /* Sections */
+  .section-heading {
+    flex-direction: column;
+    gap: var(--space-4);
+    align-items: flex-start;
+  }
+
+  .section-intro {
+    max-width: 34rem;
+  }
+
+  .services-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .why-us {
+    grid-template-columns: 1fr;
+  }
+
+  .why-image {
+    min-height: 460px;
+  }
+
+  .why-content {
+    padding: var(--space-9) var(--gutter);
+  }
+
+  .process-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .process-grid li {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .review-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .review-grid > li {
+    border-bottom: 1px solid var(--line);
+  }
+
+  .review-grid > li:last-child {
+    border-bottom: 0;
+  }
+
+  .review-card,
+  .review-grid > li:first-child .review-card,
+  .review-grid > li:last-child .review-card {
+    padding: var(--space-5) 0;
+    border-right: 0;
+  }
+
+  .faq {
+    grid-template-columns: 1fr;
+    gap: var(--space-7);
+  }
+
+  .contact {
+    grid-template-columns: 1fr;
+  }
+
+  .contact-copy {
+    padding-right: 0;
+    padding-bottom: var(--space-7);
+    border-right: 0;
+    border-bottom: 1px solid var(--line-on-dark);
+  }
+
+  .footer-inner {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+  }
+
+  .footer-contact {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-5);
+  }
+}
+
+@media (max-width: 600px) {
+  .topbar-inner {
+    gap: var(--space-2);
+  }
+
+  .brand-logo {
+    width: 44px;
+    height: 44px;
+  }
+
+  .brand-copy strong {
+    font-size: 1.25rem;
+  }
+
+  /* Keep the hero readable: vertical shade, shorter type. */
+  .hero {
+    min-height: 660px;
+  }
+
+  .hero-image {
+    object-position: 68% center;
+  }
+
+  .hero-shade {
+    background: linear-gradient(
+      180deg,
+      rgba(8, 10, 12, 0.72) 0%,
+      rgba(8, 10, 12, 0.62) 45%,
+      rgba(8, 10, 12, 0.82) 100%
+    );
+  }
+
+  .hero-inner {
+    padding: var(--space-8) var(--gutter) 200px;
+  }
+
+  .hero-title {
+    font-size: clamp(2.5rem, 12.5vw, 3.5rem);
+  }
+
+  .hero-actions {
+    margin-top: var(--space-5);
+  }
+
+  .hero-actions .button {
+    flex: 1 1 100%;
+  }
+
+  .hero-trust {
+    gap: var(--space-2) var(--space-4);
+    margin-top: var(--space-5);
+  }
+
+  .hero-card {
+    right: var(--gutter);
+    left: var(--gutter);
+    min-width: 0;
+    padding: var(--space-4);
+  }
+
+  .hero-card-arrow {
+    display: none;
+  }
+
+  .intro {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+    padding-block: var(--space-9);
+  }
+
+  .section-title,
+  .intro-title,
+  .why-content h2,
+  .process h2,
+  .faq h2,
+  .contact h2 {
+    font-size: clamp(2rem, 8.5vw, 2.75rem);
+  }
+
+  .services,
+  .process,
+  .testimonials,
+  .faq,
+  .contact {
+    padding-block: var(--space-9);
+  }
+
+  .services-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .service-card,
+  .service-card-link {
+    min-height: 250px;
+  }
+
+  .service-card-link {
+    padding: var(--space-5) var(--space-5) var(--space-9);
+  }
+
+  .service-card::before {
+    background-image: var(--service-image-mobile, var(--service-image));
+  }
+
+  .why-image {
+    min-height: 340px;
+  }
+
+  .why-content {
+    padding: var(--space-8) var(--gutter);
+  }
+
+  .process-grid {
+    grid-template-columns: 1fr;
+    border-left: 0;
+  }
+
+  .process-grid li {
+    padding: var(--space-4) 0;
+    border-right: 0;
+  }
+
+  .process-grid h3 {
+    margin: var(--space-3) 0 var(--space-2);
+  }
+
+  .contact {
+    gap: var(--space-6);
+  }
+
+  .contact-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .contact-actions .button {
+    width: 100%;
+  }
+
+  .faq {
+    gap: var(--space-6);
+  }
+
+  .legal-dialog {
+    width: calc(100% - 24px);
+    max-height: 90svh;
+  }
+
+  .legal-dialog-header {
+    padding: var(--space-4) var(--space-4) var(--space-3);
+  }
+
+  .legal-dialog-body {
+    padding: var(--space-4);
+  }
+
+  .legal-dialog-footer {
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .footer {
+    padding-bottom: calc(
+      var(--space-8) + var(--call-bar-h) + env(safe-area-inset-bottom, 0px)
+    );
+  }
+
+  /* --- Sticky call CTA --------------------------------------------------- */
+  .mobile-call-bar {
+    display: block;
+  }
+
+  .floating-whatsapp {
+    bottom: calc(
+      var(--call-bar-h) + env(safe-area-inset-bottom, 0px) + var(--space-3)
+    );
+  }
+
+  .footer-inner {
+    grid-template-columns: 1fr;
+    gap: var(--space-5);
+  }
+
+  .footer-nav,
+  .footer-contact {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--space-1) var(--space-5);
+  }
+
+  .floating-whatsapp {
+    right: var(--space-4);
+    width: 52px;
+    height: 52px;
+  }
+}
+
+/* The mobile menu hides the bar and removes it from the tab order. */
+body[data-menu-open='true'] .mobile-call-bar {
+  display: none;
+}
+
+/* When the bar steps aside near the contacts, the FAB drops back down. */
+@media (max-width: 600px) {
+  body:has(.mobile-call-bar.is-hidden) .floating-whatsapp {
+    bottom: calc(var(--space-4) + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* Extra bottom clearance only while the bar is actually on screen. */
+@supports selector(:has(*)) {
+  @media (max-width: 600px) {
+    .site-shell:has(.mobile-call-bar.is-hidden) .footer {
+      padding-bottom: var(--space-8);
+    }
+  }
+}
+
+@media (max-width: 380px) {
+  .hero-trust {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+
+  .contact-hours dt {
+    min-width: 0;
+  }
+}

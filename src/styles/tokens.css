@@ -1,0 +1,114 @@
+/* ---------------------------------------------------------------------------
+   Design tokens — single source of truth.
+   Every colour pair used for text or UI meets WCAG AA:
+   ratios noted next to the token (verified on --paper #f2f0eb).
+--------------------------------------------------------------------------- */
+
+:root {
+  /* Surfaces */
+  --ink: #111315;
+  --ink-soft: #1a1d20;
+  --ink-deep: #0b0c0d;
+  --paper: #f2f0eb;
+  --paper-soft: #e9e6df;
+  --white: #ffffff;
+
+  /* Text */
+  --muted: #5c5f62; /* 5.64 on paper · 5.16 on paper-soft · 6.43 on white */
+  --muted-on-dark: #a8aaac; /* 7.99 on ink · 8.40 on ink-deep */
+  --heading-2nd: #8a857e; /* 3.21 on paper — large text only */
+
+  /* Accents */
+  --accent: #c2410c; /* buttons/rings: 5.18 vs white · 4.55 on paper */
+  --accent-hover: #a3380a; /* 6.00 vs white */
+  --accent-text: #b23c0a; /* small labels: 5.20 on paper · 4.75 on paper-soft */
+  --brand-orange: #ef5b2a; /* 5.50 on ink — dark surfaces only */
+  --whatsapp: #0f7b52; /* 5.28 vs white */
+  --whatsapp-hover: #0b6b47; /* 6.55 vs white */
+
+  /* Lines */
+  --line: #d7d4ce;
+  --line-strong: #8a857e; /* 3.21 on paper — form/control borders */
+  --line-dark: #35383a;
+  --line-on-dark: rgba(255, 255, 255, 0.14);
+
+  /* Typography */
+  --font-display: 'Barlow Condensed', 'Arial Narrow', ui-sans-serif, system-ui,
+    sans-serif;
+  --font-body: 'Manrope', ui-sans-serif, system-ui, -apple-system, 'Segoe UI',
+    sans-serif;
+
+  --text-display: clamp(2.5rem, 6.6vw, 5.75rem);
+  --text-h2: clamp(1.95rem, 4.4vw, 3.5rem);
+  --text-h3: clamp(1.25rem, 1.9vw, 1.5rem);
+  --text-lg: 1.0625rem;
+  --text-body: 1rem;
+  --text-sm: 0.9375rem;
+  --text-xs: 0.8125rem;
+  --text-overline: 0.75rem;
+
+  /* Spacing */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 2.5rem;
+  --space-8: 3rem;
+  --space-9: 4rem;
+  --space-10: 5rem;
+  --space-11: 6rem;
+  --space-12: 8rem;
+
+  /* Layout */
+  --container: 1240px;
+  --gutter: clamp(20px, 5vw, 64px);
+  --page-pad: max(var(--gutter), calc((100% - var(--container)) / 2));
+  --section-y: clamp(64px, 8vw, 112px);
+  --header-h: 72px;
+  --call-bar-h: 76px;
+
+  /* Radii */
+  --radius-sm: 4px;
+  --radius-pill: 999px;
+
+  /* Elevation — only for floating layers */
+  --shadow-sm: 0 1px 2px rgba(17, 19, 21, 0.06);
+  --shadow-md: 0 16px 40px -20px rgba(17, 19, 21, 0.45);
+  --shadow-lg: 0 20px 44px -18px rgba(11, 12, 13, 0.45);
+
+  /* Motion */
+  --ease: cubic-bezier(0.2, 0.7, 0.3, 1);
+  --dur-fast: 140ms;
+  --dur: 200ms;
+  --dur-slow: 300ms;
+
+  /* Focus */
+  --ring-width: 2px;
+  --ring-offset: 3px;
+  --ring-color: var(--accent);
+}
+
+@media (min-width: 901px) {
+  :root {
+    --header-h: 84px;
+  }
+}
+
+/* Expose the same tokens to Tailwind utilities (bg-ink, text-accent, …). */
+@theme inline {
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-deep: var(--ink-deep);
+  --color-paper: var(--paper);
+  --color-paper-soft: var(--paper-soft);
+  --color-muted: var(--muted);
+  --color-muted-on-dark: var(--muted-on-dark);
+  --color-accent: var(--accent);
+  --color-brand-orange: var(--brand-orange);
+  --color-whatsapp: var(--whatsapp);
+  --color-line: var(--line);
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+}

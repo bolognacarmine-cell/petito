@@ -1,7 +1,15 @@
 {
-  "description": "Un’app in italiano che aiuta gli utenti a trovare informazioni e completare attività online in modo semplice e accessibile.",
+  "title": "Petito Car Service | Officina meccanica a Marcianise",
+  "description": "Officina meccatronica a Marcianise (CE): manutenzione e riparazione di auto, moto e scooter. Tagliandi, diagnosi elettronica, freni e preventivi chiari. Chiama 0823 830658.",
+  "language": "it",
   "robots": {
     "index": false
+  },
+  "icons": {
+    "icon": "./favicon.svg"
+  },
+  "openGraph": {
+    "image": "./hero-petito-car-service-poster.webp"
   },
   "accessibility": {
     "addBypassLinks": false,
