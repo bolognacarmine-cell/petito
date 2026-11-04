@@ -111,6 +111,34 @@ function Icon({ name, size = 24 }: { name: IconName; size?: number }) {
 
 const services = [
   {
+    icon: "car" as const,
+    title: "Manutenzione generale",
+    text: "Interventi completi di manutenzione ordinaria e straordinaria per auto, moto e scooter.",
+    image: serviceImage(7),
+    imageMobile: serviceImageMobile(7),
+  },
+  {
+    icon: "car" as const,
+    title: "Tagliando auto",
+    text: "Manutenzione programmata nel rispetto delle specifiche della casa madre.",
+    image: serviceImage(8),
+    imageMobile: serviceImageMobile(8),
+  },
+  {
+    icon: "motorcycle" as const,
+    title: "Assistenza moto",
+    text: "Tagliandi, freni, trasmissione e messa a punto per scooter e motocicli.",
+    image: serviceImage(9),
+    imageMobile: serviceImageMobile(9),
+  },
+  {
+    icon: "tool" as const,
+    title: "Freni e sospensioni",
+    text: "Controllo e sostituzione di dischi, pastiglie, ammortizzatori e componenti.",
+    image: serviceImage(10),
+    imageMobile: serviceImageMobile(10),
+  },
+  {
     icon: "engine" as const,
     title: "Meccanica generale",
     text: "Diagnosi e riparazioni per motore, trasmissione, frizione e distribuzione.",
@@ -118,25 +146,11 @@ const services = [
     imageMobile: serviceImageMobile(1),
   },
   {
-    icon: "car" as const,
-    title: "Tagliando auto",
-    text: "Manutenzione programmata nel rispetto delle specifiche della casa madre.",
-    image: serviceImage(2),
-    imageMobile: serviceImageMobile(2),
-  },
-  {
-    icon: "motorcycle" as const,
-    title: "Assistenza moto",
-    text: "Tagliandi, freni, trasmissione e messa a punto per scooter e motocicli.",
-    image: serviceImage(3),
-    imageMobile: serviceImageMobile(3),
-  },
-  {
-    icon: "tool" as const,
-    title: "Freni e sospensioni",
-    text: "Controllo e sostituzione di dischi, pastiglie, ammortizzatori e componenti.",
-    image: serviceImage(4),
-    imageMobile: serviceImageMobile(4),
+    icon: "clock" as const,
+    title: "Controlli stagionali",
+    text: "Check-up completi prima di un viaggio o al cambio di stagione.",
+    image: serviceImage(11),
+    imageMobile: serviceImageMobile(11),
   },
   {
     icon: "shield" as const,
@@ -144,13 +158,6 @@ const services = [
     text: "Strumentazione professionale per individuare guasti e anomalie con precisione.",
     image: serviceImage(5),
     imageMobile: serviceImageMobile(5),
-  },
-  {
-    icon: "clock" as const,
-    title: "Controlli stagionali",
-    text: "Check-up completi prima di un viaggio o al cambio di stagione.",
-    image: serviceImage(6),
-    imageMobile: serviceImageMobile(6),
   },
 ]
 
