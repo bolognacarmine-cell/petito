@@ -87,6 +87,8 @@ export const services: Service[] = [
     icon: "shield",
     title: "Diagnosi elettronica",
     text: "Strumentazione professionale per individuare guasti e anomalie con precisione.",
+    image: serviceImage(5),
+    imageMobile: serviceImageMobile(5),
   },
   {
     icon: "clock",
