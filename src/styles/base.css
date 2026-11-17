@@ -8,7 +8,7 @@
   body {
     margin: 0;
     min-width: 320px;
-    background: var(--paper);
+    background: #0b0d10;
     color: var(--ink);
     font-family: var(--font-body);
     font-size: var(--text-body);
@@ -106,7 +106,36 @@
 
 @layer components {
   .site-shell {
+    position: relative;
     overflow-x: clip;
+    background: radial-gradient(120% 80% at 50% 0%, #161311 0%, #0d0f12 55%, #090a0c 100%);
+  }
+
+  .workshop-tools-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 0.8;
+  }
+
+  .workshop-tools-bg canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  .topbar,
+  main,
+  .footer,
+  .floating-whatsapp,
+  .mobile-call-bar {
+    position: relative;
+    z-index: 1;
+  }
+
+  .topbar {
+    z-index: 50;
   }
 
   .visually-hidden {

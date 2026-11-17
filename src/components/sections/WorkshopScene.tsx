@@ -2,46 +2,6 @@ import { useEffect, useRef, useState } from "react"
 import * as THREE from "three"
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js"
 
-type Puff = {
-  sprite: THREE.Sprite
-  velocity: THREE.Vector3
-  life: number
-  maxLife: number
-}
-
-function createTextTexture(text: string) {
-  const canvas = document.createElement("canvas")
-  canvas.width = 1536
-  canvas.height = 320
-  const ctx = canvas.getContext("2d")
-  if (!ctx) return new THREE.CanvasTexture(canvas)
-
-  const lines = ['Angelo Petito per gli amici', '"Robb e Nott"']
-  ctx.clearRect(0, 0, canvas.width, canvas.height)
-  ctx.textAlign = "center"
-  ctx.textBaseline = "middle"
-
-  const drawLine = (line: string, y: number, font: string) => {
-    ctx.font = font
-    ctx.lineJoin = "round"
-    ctx.lineWidth = 10
-    ctx.strokeStyle = "rgba(20, 12, 8, 0.85)"
-    ctx.strokeText(line, canvas.width / 2, y)
-    ctx.shadowColor = "rgba(255, 170, 70, 0.45)"
-    ctx.shadowBlur = 14
-    ctx.fillStyle = "rgba(255, 250, 242, 1)"
-    ctx.fillText(line, canvas.width / 2, y)
-    ctx.shadowBlur = 0
-  }
-
-  drawLine(lines[0], canvas.height / 2 - 40, "700 66px Georgia, serif")
-  drawLine(lines[1], canvas.height / 2 + 46, "700 80px Georgia, serif")
-
-  const texture = new THREE.CanvasTexture(canvas)
-  texture.needsUpdate = true
-  return texture
-}
-
 function normalizeLoadedCar(root: THREE.Object3D) {
   const box = new THREE.Box3().setFromObject(root)
   const size = box.getSize(new THREE.Vector3())
@@ -71,113 +31,6 @@ function normalizeLoadedCar(root: THREE.Object3D) {
   })
 }
 
-function findExhaustAnchor(root: THREE.Object3D) {
-  let found: THREE.Object3D | null = null
-  root.traverse((obj) => {
-    if (found) return
-    const n = obj.name.toLowerCase()
-    if (
-      n.includes("exhaust") ||
-      n.includes("muffler") ||
-      n.includes("scarico") ||
-      n.includes("tailpipe") ||
-      n.includes("pipe") ||
-      n.includes("silencer")
-    ) {
-      found = obj
-    }
-  })
-  if (found) return found
-
-  const box = new THREE.Box3().setFromObject(root)
-  const size = box.getSize(new THREE.Vector3())
-  const center = box.getCenter(new THREE.Vector3())
-  const anchor = new THREE.Object3D()
-  // Fallback: low rear corner area, slightly outside body so puffs are visible
-  anchor.position.set(box.min.x - size.x * 0.02, box.min.y + size.y * 0.22, center.z - size.z * 0.2)
-  root.add(anchor)
-  return anchor
-}
-
-function createDoorTextTexture(text: string) {
-  const canvas = document.createElement("canvas")
-  canvas.width = 2048
-  canvas.height = 640
-  const ctx = canvas.getContext("2d")
-  if (!ctx) return new THREE.CanvasTexture(canvas)
-
-  ctx.clearRect(0, 0, canvas.width, canvas.height)
-  ctx.textAlign = "center"
-  ctx.textBaseline = "middle"
-  ctx.lineJoin = "round"
-  ctx.font = "900 240px Arial, sans-serif"
-  ctx.lineWidth = 28
-  ctx.strokeStyle = "rgba(0, 0, 0, 0.98)"
-  ctx.strokeText(text, canvas.width / 2, canvas.height / 2)
-  ctx.shadowColor = "rgba(0, 0, 0, 0.4)"
-  ctx.shadowBlur = 10
-  ctx.fillStyle = "#ffffff"
-  ctx.fillText(text, canvas.width / 2, canvas.height / 2)
-
-  const texture = new THREE.CanvasTexture(canvas)
-  texture.colorSpace = THREE.SRGBColorSpace
-  texture.needsUpdate = true
-  texture.minFilter = THREE.LinearFilter
-  texture.magFilter = THREE.LinearFilter
-  texture.generateMipmaps = false
-  return texture
-}
-
-function createDoorLabel(text: string, opts: { width?: number; height?: number } = {}) {
-  const texture = createDoorTextTexture(text)
-  const material = new THREE.MeshBasicMaterial({
-    map: texture,
-    transparent: true,
-    depthWrite: false,
-    depthTest: false,
-    side: THREE.DoubleSide,
-    toneMapped: false,
-  })
-  const geometry = new THREE.PlaneGeometry(opts.width ?? 1.35, opts.height ?? 0.32)
-  const mesh = new THREE.Mesh(geometry, material)
-  mesh.renderOrder = 20
-  mesh.name = `door-label-${text}`
-  return mesh
-}
-
-function addDoorLabels(carGroup: THREE.Group, model: THREE.Object3D): Array<{ mesh: THREE.Mesh; radius: number; angle: number; y: number; cx: number; cz: number }> {
-  // --- CONFIGURAZIONE REGOLABILE ---
-  const LEFT_TEXT = "Angelo Petito" // esatto
-  const RIGHT_TEXT = "Detto Robb e Nott" // esatto
-
-  carGroup.updateMatrixWorld(true)
-  model.updateMatrixWorld(true)
-  const worldBox = new THREE.Box3().setFromObject(carGroup)
-  const worldSize = worldBox.getSize(new THREE.Vector3())
-  const worldCenter = worldBox.getCenter(new THREE.Vector3())
-  const localCenter = carGroup.worldToLocal(worldCenter.clone())
-
-  const leftLabel = createDoorLabel(LEFT_TEXT, { width: 2.4, height: 0.62 })
-  const rightLabel = createDoorLabel(RIGHT_TEXT, { width: 2.9, height: 0.62 })
-
-  const radius = Math.max(worldSize.x, worldSize.z) * 0.72
-  const y = localCenter.y + worldSize.y * 0.05
-  const cx = localCenter.x
-  const cz = localCenter.z
-
-  const left = { mesh: leftLabel, radius, angle: Math.PI / 2, y, cx, cz }
-  const right = { mesh: rightLabel, radius, angle: -Math.PI / 2, y, cx, cz }
-
-  leftLabel.position.set(cx + Math.cos(left.angle) * radius, y, cz + Math.sin(left.angle) * radius)
-  rightLabel.position.set(cx + Math.cos(right.angle) * radius, y, cz + Math.sin(right.angle) * radius)
-  leftLabel.scale.set(1, 1, 1)
-  rightLabel.scale.set(1, 1, 1)
-
-  carGroup.add(leftLabel)
-  carGroup.add(rightLabel)
-  return [left, right]
-}
-
 export function WorkshopScene() {
   const containerRef = useRef<HTMLDivElement>(null)
   const [repaired, setRepaired] = useState(false)
@@ -194,7 +47,9 @@ export function WorkshopScene() {
   const repairIntervalRef = useRef<number | null>(null)
   const engineIntervalRef = useRef<number | null>(null)
   const engineNodesRef = useRef<{ osc: OscillatorNode; gain: GainNode; lfo: OscillatorNode; lfoGain: GainNode } | null>(null)
-  const doorLabelsRef = useRef<Array<{ mesh: THREE.Mesh; radius: number; angle: number; y: number; cx: number; cz: number }>>([])
+  const baseModelRef = useRef<THREE.Object3D | null>(null)
+  const smileModelRef = useRef<THREE.Object3D | null>(null)
+  const headlightMatsRef = useRef<THREE.MeshStandardMaterial[]>([])
 
   useEffect(() => {
     repairedRef.current = repaired
@@ -711,40 +566,37 @@ export function WorkshopScene() {
     carGroup.position.y = 0.18
     scene.add(carGroup)
 
-    const exhaustWorld = new THREE.Vector3()
-    let exhaustObj: THREE.Object3D | null = null
     const headlightMats: THREE.MeshStandardMaterial[] = []
-
-    const textTexture = createTextTexture('Angelo Petito per gli amici "Robb e Nott"')
-    const puffs: Puff[] = []
+    headlightMatsRef.current = headlightMats
     let raf = 0
     let last = performance.now()
-    let emitAccumulator = 0
     let disposed = false
 
     const loader = new GLTFLoader()
+    const collectHeadlights = (model: THREE.Object3D) => {
+      model.traverse((obj) => {
+        if ((obj as THREE.Mesh).isMesh) {
+          const mesh = obj as THREE.Mesh
+          const name = mesh.name.toLowerCase()
+          if (name.includes("head") || name.includes("light") || name.includes("lamp") || name.includes("faro")) {
+            const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material]
+            mats.forEach((m) => {
+              if (m && "emissive" in m) headlightMats.push(m as THREE.MeshStandardMaterial)
+            })
+          }
+        }
+      })
+    }
+
     loader.load(
       "/models/jaguar_grigia.glb",
       (gltf) => {
         if (disposed) return
         const model = gltf.scene
         normalizeLoadedCar(model)
+        baseModelRef.current = model
         carGroup.add(model)
-        exhaustObj = findExhaustAnchor(model)
-        doorLabelsRef.current = addDoorLabels(carGroup, model)
-
-        model.traverse((obj) => {
-          if ((obj as THREE.Mesh).isMesh) {
-            const mesh = obj as THREE.Mesh
-            const name = mesh.name.toLowerCase()
-            if (name.includes("head") || name.includes("light") || name.includes("lamp") || name.includes("faro")) {
-              const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material]
-              mats.forEach((m) => {
-                if (m && "emissive" in m) headlightMats.push(m as THREE.MeshStandardMaterial)
-              })
-            }
-          }
-        })
+        collectHeadlights(model)
         setModelReady(true)
       },
       undefined,
@@ -752,6 +604,24 @@ export function WorkshopScene() {
         if (disposed) return
         console.error("Errore caricamento modello auto:", err)
         setModelError("Impossibile caricare il modello 3D dell’auto.")
+      },
+    )
+
+    loader.load(
+      "/models/jaguar_sorridente_grigia.glb",
+      (gltf) => {
+        if (disposed) return
+        const model = gltf.scene
+        normalizeLoadedCar(model)
+        model.visible = false
+        smileModelRef.current = model
+        carGroup.add(model)
+        collectHeadlights(model)
+      },
+      undefined,
+      (err) => {
+        if (disposed) return
+        console.error("Errore caricamento modello auto sorridente:", err)
       },
     )
 
@@ -768,42 +638,6 @@ export function WorkshopScene() {
     ro.observe(container)
     resize()
 
-    const emitPuff = () => {
-      if (!exhaustObj) return
-      exhaustObj.getWorldPosition(exhaustWorld)
-
-      const carCenter = new THREE.Vector3()
-      carGroup.getWorldPosition(carCenter)
-      const outDir = exhaustWorld.clone().sub(carCenter)
-      outDir.y = 0
-      if (outDir.lengthSq() < 0.0001) outDir.set(-1, 0, 0)
-      outDir.normalize()
-
-      const material = new THREE.SpriteMaterial({
-        map: textTexture,
-        transparent: true,
-        opacity: 1,
-        depthWrite: false,
-        depthTest: false,
-      })
-      const sprite = new THREE.Sprite(material)
-      sprite.renderOrder = 20
-      sprite.position.copy(exhaustWorld).addScaledVector(outDir, 0.32)
-      sprite.position.y += 0.06
-      sprite.scale.set(0.04, 0.01, 1)
-      scene.add(sprite)
-      puffs.push({
-        sprite,
-        velocity: new THREE.Vector3(
-          outDir.x * (0.7 + Math.random() * 0.35),
-          0.18 + Math.random() * 0.16,
-          outDir.z * (0.7 + Math.random() * 0.35) + (Math.random() - 0.5) * 0.08,
-        ),
-        life: 0,
-        maxLife: 3.4 + Math.random() * 1.0,
-      })
-    }
-
     const animate = (now: number) => {
       raf = window.requestAnimationFrame(animate)
       const dt = Math.min((now - last) / 1000, 0.05)
@@ -818,64 +652,23 @@ export function WorkshopScene() {
         if (engineOnRef.current) {
           carGroup.rotation.y += dt * 0.7
           carGroup.position.y = 0.18 + Math.sin(now * 0.03) * 0.008
-          emitAccumulator += dt
-          if (emitAccumulator > 0.55) {
-            emitAccumulator = 0
-            emitPuff()
-          }
         } else if (repairingRef.current) {
           carGroup.rotation.y += dt * 0.35
           carGroup.position.y += (0.18 - carGroup.position.y) * 0.1
-          emitAccumulator = 0
         } else {
           carGroup.rotation.y += dt * 0.12
           carGroup.position.y += (0.18 - carGroup.position.y) * 0.1
-          emitAccumulator = 0
-        }
-      } else if (engineOnRef.current) {
-        emitAccumulator += dt
-        if (emitAccumulator > 1.4 && puffs.length < 3) {
-          emitAccumulator = 0
-          emitPuff()
         }
       }
+
+      const showSmile = engineOnRef.current && repairedRef.current
+      if (baseModelRef.current) baseModelRef.current.visible = !showSmile
+      if (smileModelRef.current) smileModelRef.current.visible = showSmile
 
       const headlightsOn = engineOnRef.current
       headlightMats.forEach((mat) => {
         mat.emissiveIntensity = headlightsOn ? 1.8 : (mat.emissiveIntensity || 0.2)
       })
-
-      // Fai girare le scritte a cerchi attorno all'auto, sempre leggibili
-      if (doorLabelsRef.current.length) {
-        const camWorld = new THREE.Vector3()
-        camera.getWorldPosition(camWorld)
-        const t = prefersReducedMotion ? 0 : now * 0.00035
-        doorLabelsRef.current.forEach((item) => {
-          const a = item.angle + t
-          item.mesh.position.set(
-            item.cx + Math.cos(a) * item.radius,
-            item.y,
-            item.cz + Math.sin(a) * item.radius,
-          )
-          item.mesh.lookAt(camWorld)
-        })
-      }
-
-      for (let i = puffs.length - 1; i >= 0; i--) {
-        const puff = puffs[i]
-        puff.life += dt
-        puff.sprite.position.addScaledVector(puff.velocity, dt)
-        const k = puff.life / puff.maxLife
-        const scale = 2.2 + k * 1.4
-        puff.sprite.scale.set(scale, scale * 0.22, 1)
-        const mat = puff.sprite.material as THREE.SpriteMaterial
-        mat.opacity = Math.max(0, 1 * (1 - k))
-        if (puff.life >= puff.maxLife) {
-          scene.remove(puff.sprite)
-          mat.dispose()
-          puffs.splice(i, 1)
-        }
-      }
 
       renderer.render(scene, camera)
     }
@@ -884,14 +677,8 @@ export function WorkshopScene() {
 
     return () => {
       disposed = true
-      doorLabelsRef.current = []
       window.cancelAnimationFrame(raf)
       ro.disconnect()
-      puffs.forEach((p) => {
-        scene.remove(p.sprite)
-        ;(p.sprite.material as THREE.SpriteMaterial).dispose()
-      })
-      textTexture.dispose()
       scene.traverse((obj) => {
         if (obj instanceof THREE.Mesh) {
           obj.geometry.dispose()
@@ -943,7 +730,7 @@ export function WorkshopScene() {
           {!modelError && modelReady && !repaired && !repairing && "Auto in attesa di intervento."}
           {!modelError && modelReady && repairing && `Riparazione in corso… ${progress}%`}
           {!modelError && modelReady && repaired && !engineOn && "Riparazione completata. Pronta all'accensione."}
-          {!modelError && modelReady && repaired && engineOn && "Motore acceso: il messaggio esce dalla marmitta."}
+          {!modelError && modelReady && repaired && engineOn && "Motore acceso."}
         </p>
         <div className="workshop-scene__actions">
           <button
@@ -977,9 +764,8 @@ export function WorkshopScene() {
             </span>
           </button>
         </div>
-        <p className="workshop-scene__note">
-          Esperienza 3D interattiva dell’officina: ripara il veicolo e avvia il motore per
-          vedere il messaggio allo scarico.
+        <p className="workshop-scene__note workshop-scene__note--reveal">
+          Da noi, dopo la riparazione, le auto vestono un nuovo look e vanno via felici.
         </p>
       </div>
     </div>

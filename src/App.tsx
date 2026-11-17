@@ -1,4 +1,5 @@
 import { Header } from "@/components/sections/Header"
+import { WorkshopToolsBackground } from "@/components/WorkshopToolsBackground"
 import { Hero } from "@/components/sections/Hero"
 import { Intro } from "@/components/sections/Intro"
 import { Services } from "@/components/sections/Services"
@@ -11,12 +12,16 @@ import { Footer } from "@/components/sections/Footer"
 import { WhatsAppFab } from "@/components/sections/WhatsAppFab"
 import { MobileCallBar } from "@/components/sections/MobileCallBar"
 
+
 export default function App() {
   return (
     <div className="site-shell">
+      <WorkshopToolsBackground />
       <a className="skip-link" href="#contenuto">
         Vai al contenuto principale
       </a>
+
+
 
       <Header />
 

@@ -25,7 +25,7 @@ export function Intro() {
 
           <div className="intro-copy">
             <p className="intro-story">
-              Angelo e Tommaso Petito: due generazioni, un’unica passione per la
+              Angelo alias "Robb e Nott" e Tommaso: due generazioni, un’unica passione per la
               meccanica.
             </p>
             <p>
