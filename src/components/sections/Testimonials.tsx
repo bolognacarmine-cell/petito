@@ -28,9 +28,9 @@ export function Testimonials() {
         <SectionReveal fromY={40} duration={0.6}>
           <div ref={headingRef as never}>
             <Eyebrow>Dicono di noi</Eyebrow>
-            <h2 className="section-title" id="reviews-title">
-              <span>La fiducia si costruisce</span>
-              <span className="title-line">un intervento alla volta.</span>
+            <h2 className="section-title testimonials-title-impact" id="reviews-title">
+              <span className="testimonials-title-impact__lead">La fiducia si costruisce</span>
+              <span className="title-line testimonials-title-impact__line">un intervento alla volta.</span>
             </h2>
           </div>
         </SectionReveal>
