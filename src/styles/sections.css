@@ -279,14 +279,24 @@
   /* --- Intro / officina -------------------------------------------------- */
   .intro {
     display: grid;
-    grid-template-columns: minmax(0, 0.62fr) minmax(0, 1.45fr) minmax(0, 1fr);
-    gap: clamp(24px, 4vw, 64px);
-    align-items: start;
+    grid-template-columns: minmax(280px, 0.9fr) minmax(0, 1.4fr);
+    gap: clamp(24px, 4vw, 56px);
+    align-items: stretch;
     padding: var(--section-y) var(--page-pad);
+    background:
+      radial-gradient(120% 80% at 100% 0%, rgba(180, 35, 24, 0.08), transparent 55%),
+      var(--paper);
+  }
+
+  .intro-heading {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    justify-content: center;
   }
 
   .intro .eyebrow {
-    padding-top: var(--space-2);
+    padding-top: 0;
   }
 
   .intro-title {
@@ -298,6 +308,7 @@
     flex-direction: column;
     gap: var(--space-4);
     align-items: flex-start;
+    margin-top: var(--space-2);
   }
 
   .intro-story {
@@ -312,6 +323,161 @@
     color: var(--muted);
     font-size: var(--text-sm);
     line-height: 1.75;
+  }
+
+  .intro-scene-wrap {
+    min-width: 0;
+  }
+
+  .workshop-scene {
+    position: relative;
+    display: grid;
+    grid-template-rows: minmax(360px, 52vh) auto;
+    overflow: hidden;
+    min-height: 100%;
+    border: 1px solid var(--line-strong);
+    background: #171311;
+    box-shadow: 0 24px 60px rgba(17, 12, 10, 0.18);
+  }
+
+  .workshop-scene__viewport {
+    position: relative;
+    min-height: 320px;
+  }
+
+  .workshop-scene__viewport canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .workshop-scene__hud {
+    display: grid;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-5) var(--space-5);
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    background: linear-gradient(180deg, #1d1816 0%, #141110 100%);
+    color: var(--white);
+  }
+
+  .workshop-scene__status {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  .workshop-scene__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    align-items: center;
+  }
+
+  .ignition-control {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: center;
+    justify-content: center;
+    min-width: 6.5rem;
+    padding: 0.25rem;
+    color: #fff6ea;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+  }
+
+  .ignition-control:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .ignition-control__ring {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 4.5rem;
+    height: 4.5rem;
+    border-radius: 999px;
+    background:
+      radial-gradient(circle at 35% 30%, #f3f4f6 0%, #aeb4bd 35%, #6b7280 70%, #3f4550 100%);
+    box-shadow:
+      inset 0 2px 3px rgba(255, 255, 255, 0.45),
+      inset 0 -4px 8px rgba(0, 0, 0, 0.35),
+      0 6px 14px rgba(0, 0, 0, 0.35);
+    border: 2px solid #2b3038;
+  }
+
+  .ignition-control__ring::before {
+    content: "";
+    position: absolute;
+    inset: 0.4rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    box-shadow: inset 0 0 0 2px rgba(20, 24, 30, 0.35);
+  }
+
+  .ignition-control__core {
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 999px;
+    background: #ef4444;
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.5);
+  }
+
+  .ignition-control--service.is-ready .ignition-control__core {
+    background: #22c55e;
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.6);
+  }
+
+  .ignition-key {
+    transition: transform 220ms var(--ease, ease);
+  }
+
+  .ignition-key__slot {
+    width: 0.3rem;
+    height: 1.7rem;
+    border-radius: 0.2rem;
+    background: #111827;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  }
+
+  .ignition-key__tooth {
+    position: absolute;
+    width: 1.1rem;
+    height: 0.3rem;
+    right: 1.15rem;
+    top: 50%;
+    transform: translateY(-50%);
+    border-radius: 0.15rem;
+    background: #111827;
+  }
+
+  .ignition-control--start.is-on .ignition-key {
+    transform: rotate(45deg);
+  }
+
+  .ignition-control--start.is-on .ignition-control__ring {
+    box-shadow:
+      inset 0 2px 3px rgba(255, 255, 255, 0.45),
+      inset 0 -4px 8px rgba(0, 0, 0, 0.35),
+      0 0 0 3px rgba(34, 197, 94, 0.18),
+      0 6px 14px rgba(0, 0, 0, 0.35);
+  }
+
+  .ignition-control__label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #f8ede3;
+  }
+
+  .workshop-scene__note {
+    color: #d6c8bf;
+    font-size: var(--text-xs);
+    line-height: 1.6;
   }
 
   /* --- Shared section heading ------------------------------------------- */
