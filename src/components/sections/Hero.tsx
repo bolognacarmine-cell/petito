@@ -5,18 +5,21 @@ import { Icon } from "@/components/Icon"
 import { contact, media } from "@/content/site"
 import { usePrefersReducedMotion } from "@/hooks/useUiPreferences"
 import { useHeroEntrance } from "@/hooks/useHeroEntrance"
+import { useParallax } from "@/hooks"
+import type { RefObject } from "react"
 
 const trustPoints = ["Preventivi chiari", "Ricambi di qualità", "Auto e moto"]
 
 export function Hero() {
   const reducedMotion = usePrefersReducedMotion()
 
-  const eyebrowRef = useRef<HTMLElement>(null)
-  const headlineRef = useRef<HTMLElement>(null)
-  const leadRef = useRef<HTMLElement>(null)
-  const actionsRef = useRef<HTMLElement>(null)
-  const trustRef = useRef<HTMLElement>(null)
-  const cardRef = useRef<HTMLElement>(null)
+  const eyebrowRef = useRef<HTMLDivElement>(null)
+  const headlineRef = useRef<HTMLDivElement>(null)
+  const leadRef = useRef<HTMLDivElement>(null)
+  const actionsRef = useRef<HTMLDivElement>(null)
+  const trustRef = useRef<HTMLDivElement>(null)
+  const cardRef = useRef<HTMLDivElement>(null)
+  const heroMediaRef = useRef<HTMLDivElement>(null)
 
   useHeroEntrance({
     headlineRef,
@@ -26,10 +29,11 @@ export function Hero() {
     cardRef,
     eyebrowRef,
   })
+  useParallax({ ref: heroMediaRef, intensity: 30, axis: "both" })
 
   return (
     <section className="hero" id="home" aria-labelledby="hero-title">
-      <div className="hero-media">
+      <div className="hero-media" ref={heroMediaRef}>
         {reducedMotion ? (
           <img
             className="hero-image"

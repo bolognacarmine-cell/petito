@@ -8,17 +8,9 @@
   }
 
   .workshop-scene {
-    grid-template-rows: minmax(360px, 50vh) auto;
+    min-height: clamp(420px, 56vh, 620px);
   }
 
-  .process-grid li {
-    min-height: 0;
-    padding-block: var(--space-5);
-  }
-
-  .process-grid h3 {
-    margin-top: var(--space-5);
-  }
 }
 
 @media (max-width: 900px) {
@@ -95,11 +87,7 @@
   }
 
   .process-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .process-grid li {
-    border-bottom: 1px solid var(--line);
+    grid-template-columns: 1fr;
   }
 
   .review-grid {
@@ -221,7 +209,7 @@
   }
 
   .workshop-scene {
-    grid-template-rows: minmax(320px, 46svh) auto;
+    min-height: clamp(360px, 52svh, 540px);
   }
 
   .workshop-scene__hud {
@@ -304,13 +292,8 @@
     border-left: 0;
   }
 
-  .process-grid li {
-    padding: var(--space-4) 0;
-    border-right: 0;
-  }
-
-  .process-grid h3 {
-    margin: var(--space-3) 0 var(--space-2);
+  .process-card__body {
+    padding: var(--space-4);
   }
 
   .contact {
@@ -406,7 +389,7 @@ body[data-menu-open='true'] .mobile-call-bar {
 
 @media (max-width: 480px) {
   .workshop-scene {
-    grid-template-rows: minmax(300px, 44svh) auto;
+    min-height: clamp(320px, 48svh, 460px);
   }
 
   .workshop-scene__hud {

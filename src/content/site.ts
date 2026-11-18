@@ -1,19 +1,4 @@
-export type IconName =
-  | "arrow"
-  | "car"
-  | "check"
-  | "clock"
-  | "engine"
-  | "location"
-  | "mail"
-  | "menu"
-  | "motorcycle"
-  | "phone"
-  | "quote"
-  | "shield"
-  | "tool"
-  | "whatsapp"
-  | "x"
+export type IconName = "arrow" | "car" | "check" | "clock" | "engine" | "location" | "mail" | "menu" | "motorcycle" | "phone" | "quote" | "shield" | "tool" | "whatsapp" | "x"
 
 export type Service = {
   icon: IconName
@@ -32,6 +17,8 @@ export type ProcessStep = {
   number: string
   title: string
   text: string
+  image: string
+  imageAlt: string
 }
 
 export type Review = {
@@ -53,6 +40,8 @@ const serviceImage = (index: number) =>
   asset(`assets/images/services/service-${index}.webp`)
 const serviceImageMobile = (index: number) =>
   asset(`assets/images/services/service-${index}-mobile.webp`)
+
+const processImage = (file: string) => asset(`assets/images/process/${file}`)
 
 export const services: Service[] = [
   {
@@ -102,23 +91,31 @@ export const services: Service[] = [
 export const processSteps: ProcessStep[] = [
   {
     number: "01",
-    title: "Contattaci",
+    title: "Contattatici",
     text: "Descrivici il problema e concordiamo il momento migliore.",
+    image: processImage("contattatici.svg"),
+    imageAlt: "Telefono sorridente e messaggi per contattare l’officina",
   },
   {
     number: "02",
     title: "Diagnosi",
     text: "Controlliamo il veicolo e individuiamo con precisione la causa.",
+    image: processImage("diagnosi.webp"),
+    imageAlt: "Meccanico che controlla un veicolo in officina",
   },
   {
     number: "03",
     title: "Preventivo",
     text: "Ti spieghiamo l’intervento e condividiamo costi e tempi.",
+    image: processImage("preventivo.webp"),
+    imageAlt: "Documenti e calcoli per il preventivo",
   },
   {
     number: "04",
     title: "Riparti",
     text: "Eseguiamo il lavoro e riconsegniamo il mezzo pronto per la strada.",
+    image: processImage("riparti.webp"),
+    imageAlt: "Auto in viaggio al tramonto dopo l’intervento",
   },
 ]
 

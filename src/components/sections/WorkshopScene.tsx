@@ -1,6 +1,31 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef } from "react"
 import * as THREE from "three"
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js"
+
+function createSignTexture() {
+  const canvas = document.createElement("canvas")
+  canvas.width = 1024
+  canvas.height = 256
+  const ctx = canvas.getContext("2d")
+  if (!ctx) return null
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+  ctx.textAlign = "center"
+  ctx.textBaseline = "middle"
+  ctx.fillStyle = "#f7e8d5"
+  ctx.font = "900 122px Georgia, 'Times New Roman', serif"
+  ctx.fillText("PETITO CAR", 512, 98)
+
+  ctx.fillStyle = "#e0743c"
+  ctx.font = "600 42px system-ui, -apple-system, sans-serif"
+  ctx.fillText("S E R V I C E   S R L S", 512, 192)
+
+  const texture = new THREE.CanvasTexture(canvas)
+  texture.colorSpace = THREE.SRGBColorSpace
+  texture.anisotropy = 4
+  return texture
+}
 
 function normalizeLoadedCar(root: THREE.Object3D) {
   const box = new THREE.Box3().setFromObject(root)
@@ -8,18 +33,16 @@ function normalizeLoadedCar(root: THREE.Object3D) {
   const center = box.getCenter(new THREE.Vector3())
 
   const maxDim = Math.max(size.x, size.y, size.z) || 1
-  const target = 3.8
+  const target = 4.8
   const scale = target / maxDim
   root.scale.setScalar(scale)
 
-  // Recompute after scaling
   box.setFromObject(root)
   box.getCenter(center)
   root.position.x += -center.x
   root.position.z += -center.z
   root.position.y += -box.min.y
 
-  // Heuristic orientation: most car models face +Z or -Z; align roughly toward +X for our camera
   root.rotation.y = -Math.PI / 2
 
   root.traverse((obj) => {
@@ -33,598 +56,666 @@ function normalizeLoadedCar(root: THREE.Object3D) {
 
 export function WorkshopScene() {
   const containerRef = useRef<HTMLDivElement>(null)
-  const [repaired, setRepaired] = useState(false)
-  const [repairing, setRepairing] = useState(false)
-  const [engineOn, setEngineOn] = useState(false)
-  const [progress, setProgress] = useState(0)
-  const [modelReady, setModelReady] = useState(false)
-  const [modelError, setModelError] = useState<string | null>(null)
-
-  const repairedRef = useRef(repaired)
-  const engineOnRef = useRef(engineOn)
-  const repairingRef = useRef(repairing)
-  const audioCtxRef = useRef<AudioContext | null>(null)
-  const repairIntervalRef = useRef<number | null>(null)
-  const engineIntervalRef = useRef<number | null>(null)
-  const engineNodesRef = useRef<{ osc: OscillatorNode; gain: GainNode; lfo: OscillatorNode; lfoGain: GainNode } | null>(null)
-  const baseModelRef = useRef<THREE.Object3D | null>(null)
-  const smileModelRef = useRef<THREE.Object3D | null>(null)
-  const headlightMatsRef = useRef<THREE.MeshStandardMaterial[]>([])
-
-  useEffect(() => {
-    repairedRef.current = repaired
-  }, [repaired])
-  useEffect(() => {
-    engineOnRef.current = engineOn
-  }, [engineOn])
-  useEffect(() => {
-    repairingRef.current = repairing
-  }, [repairing])
-
-  const ensureAudio = () => {
-    if (typeof window === "undefined") return null
-    const Ctx = window.AudioContext || (window as any).webkitAudioContext
-    if (!Ctx) return null
-    if (!audioCtxRef.current) audioCtxRef.current = new Ctx()
-    if (audioCtxRef.current.state === "suspended") {
-      void audioCtxRef.current.resume()
-    }
-    return audioCtxRef.current
-  }
-
-  const playRepairTick = () => {
-    const ctx = ensureAudio()
-    if (!ctx) return
-    const now = ctx.currentTime
-    const variant = Math.random()
-
-    if (variant < 0.45) {
-      // Impact wrench / ratchet clicks
-      const clicks = 2 + Math.floor(Math.random() * 4)
-      for (let i = 0; i < clicks; i++) {
-        const t = now + i * (0.045 + Math.random() * 0.03)
-        const osc = ctx.createOscillator()
-        const gain = ctx.createGain()
-        const bp = ctx.createBiquadFilter()
-        osc.type = "square"
-        const f = 900 + Math.random() * 1400
-        osc.frequency.setValueAtTime(f, t)
-        osc.frequency.exponentialRampToValueAtTime(220, t + 0.03)
-        bp.type = "bandpass"
-        bp.frequency.setValueAtTime(1200 + Math.random() * 900, t)
-        bp.Q.value = 2.5
-        gain.gain.setValueAtTime(0.0001, t)
-        gain.gain.exponentialRampToValueAtTime(0.09, t + 0.002)
-        gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.05)
-        osc.connect(bp)
-        bp.connect(gain)
-        gain.connect(ctx.destination)
-        osc.start(t)
-        osc.stop(t + 0.06)
-      }
-    } else if (variant < 0.75) {
-      // Metallic clank / tool drop
-      const osc = ctx.createOscillator()
-      const osc2 = ctx.createOscillator()
-      const gain = ctx.createGain()
-      const bp = ctx.createBiquadFilter()
-      const base = 220 + Math.random() * 380
-      osc.type = "triangle"
-      osc.frequency.setValueAtTime(base, now)
-      osc.frequency.exponentialRampToValueAtTime(base * 0.45, now + 0.22)
-      osc2.type = "sine"
-      osc2.frequency.setValueAtTime(base * 2.1, now)
-      osc2.frequency.exponentialRampToValueAtTime(base * 0.9, now + 0.18)
-      bp.type = "bandpass"
-      bp.frequency.setValueAtTime(900 + Math.random() * 1000, now)
-      bp.Q.value = 1.1
-      gain.gain.setValueAtTime(0.0001, now)
-      gain.gain.exponentialRampToValueAtTime(0.14, now + 0.004)
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.28)
-      osc.connect(bp)
-      osc2.connect(bp)
-      bp.connect(gain)
-      gain.connect(ctx.destination)
-      osc.start(now)
-      osc2.start(now)
-      osc.stop(now + 0.3)
-      osc2.stop(now + 0.25)
-    } else {
-      // Air tool / grinder-like burst
-      const len = Math.floor(ctx.sampleRate * 0.22)
-      const buffer = ctx.createBuffer(1, len, ctx.sampleRate)
-      const data = buffer.getChannelData(0)
-      for (let i = 0; i < len; i++) {
-        const env = Math.min(1, i / (ctx.sampleRate * 0.03)) * Math.pow(1 - i / len, 1.2)
-        data[i] = (Math.random() * 2 - 1) * env
-      }
-      const noise = ctx.createBufferSource()
-      noise.buffer = buffer
-      const hp = ctx.createBiquadFilter()
-      hp.type = "highpass"
-      hp.frequency.setValueAtTime(1200, now)
-      const bp = ctx.createBiquadFilter()
-      bp.type = "bandpass"
-      bp.frequency.setValueAtTime(2400 + Math.random() * 1200, now)
-      bp.Q.value = 0.9
-      const gain = ctx.createGain()
-      gain.gain.setValueAtTime(0.0001, now)
-      gain.gain.exponentialRampToValueAtTime(0.07, now + 0.02)
-      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.22)
-      noise.connect(hp)
-      hp.connect(bp)
-      bp.connect(gain)
-      gain.connect(ctx.destination)
-      noise.start(now)
-    }
-
-    // Low thud/body resonance
-    const thud = ctx.createOscillator()
-    const tGain = ctx.createGain()
-    thud.type = "sine"
-    thud.frequency.setValueAtTime(90 + Math.random() * 40, now)
-    thud.frequency.exponentialRampToValueAtTime(45, now + 0.12)
-    tGain.gain.setValueAtTime(0.0001, now)
-    tGain.gain.exponentialRampToValueAtTime(0.05, now + 0.01)
-    tGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.16)
-    thud.connect(tGain)
-    tGain.connect(ctx.destination)
-    thud.start(now)
-    thud.stop(now + 0.18)
-  }
-
-  const startRepairAudio = () => {
-    if (repairIntervalRef.current != null) return
-    playRepairTick()
-    repairIntervalRef.current = window.setInterval(() => {
-      playRepairTick()
-      if (Math.random() > 0.45) window.setTimeout(playRepairTick, 60 + Math.random() * 120)
-      if (Math.random() > 0.8) window.setTimeout(playRepairTick, 160 + Math.random() * 120)
-    }, 240)
-  }
-
-  const stopRepairAudio = () => {
-    if (repairIntervalRef.current != null) {
-      window.clearInterval(repairIntervalRef.current)
-      repairIntervalRef.current = null
-    }
-  }
-
-  const playEnginePop = (intensity = 1) => {
-    const ctx = ensureAudio()
-    if (!ctx) return
-    const now = ctx.currentTime
-
-    const len = Math.floor(ctx.sampleRate * 0.08)
-    const buffer = ctx.createBuffer(1, len, ctx.sampleRate)
-    const data = buffer.getChannelData(0)
-    for (let i = 0; i < len; i++) {
-      const env = Math.pow(1 - i / len, 2.2)
-      data[i] = (Math.random() * 2 - 1) * env
-    }
-    const noise = ctx.createBufferSource()
-    noise.buffer = buffer
-    const bp = ctx.createBiquadFilter()
-    bp.type = "bandpass"
-    bp.frequency.setValueAtTime(700 + Math.random() * 1800, now)
-    bp.Q.value = 0.8
-    const hp = ctx.createBiquadFilter()
-    hp.type = "highpass"
-    hp.frequency.value = 250
-    const gain = ctx.createGain()
-    gain.gain.setValueAtTime(0.0001, now)
-    gain.gain.exponentialRampToValueAtTime(0.12 * intensity, now + 0.003)
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.09)
-    noise.connect(hp)
-    hp.connect(bp)
-    bp.connect(gain)
-    gain.connect(ctx.destination)
-    noise.start(now)
-
-    const thump = ctx.createOscillator()
-    const tGain = ctx.createGain()
-    thump.type = "triangle"
-    thump.frequency.setValueAtTime(120 + Math.random() * 60, now)
-    thump.frequency.exponentialRampToValueAtTime(45, now + 0.07)
-    tGain.gain.setValueAtTime(0.0001, now)
-    tGain.gain.exponentialRampToValueAtTime(0.06 * intensity, now + 0.004)
-    tGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.08)
-    thump.connect(tGain)
-    tGain.connect(ctx.destination)
-    thump.start(now)
-    thump.stop(now + 0.09)
-  }
-
-  const startEngineAudio = () => {
-    if (engineNodesRef.current) return
-    const ctx = ensureAudio()
-    if (!ctx) return
-    const now = ctx.currentTime
-
-    const master = ctx.createGain()
-    master.gain.setValueAtTime(0.0001, now)
-    master.gain.exponentialRampToValueAtTime(0.32, now + 0.08) // crank/start burst
-    master.gain.exponentialRampToValueAtTime(0.16, now + 0.45)
-    master.gain.exponentialRampToValueAtTime(0.17, now + 1.2)
-    master.gain.exponentialRampToValueAtTime(0.14, now + 2.4)
-    master.connect(ctx.destination)
-
-    const lowpass = ctx.createBiquadFilter()
-    lowpass.type = "lowpass"
-    lowpass.frequency.setValueAtTime(320, now)
-    lowpass.frequency.exponentialRampToValueAtTime(1400, now + 0.35)
-    lowpass.frequency.exponentialRampToValueAtTime(900, now + 1.1)
-    lowpass.frequency.exponentialRampToValueAtTime(700, now + 2.2)
-    lowpass.Q.value = 0.9
-    lowpass.connect(master)
-
-    const waveshaper = ctx.createWaveShaper()
-    const curve = new Float32Array(256)
-    for (let i = 0; i < 256; i++) {
-      const x = (i / 255) * 2 - 1
-      curve[i] = Math.tanh(2.6 * x)
-    }
-    waveshaper.curve = curve
-    waveshaper.oversample = "2x"
-    waveshaper.connect(lowpass)
-
-    const body = ctx.createGain()
-    body.gain.value = 1.0
-    body.connect(waveshaper)
-
-    // Deep rumble base
-    const sub = ctx.createOscillator()
-    sub.type = "sine"
-    sub.frequency.setValueAtTime(26, now)
-    sub.frequency.exponentialRampToValueAtTime(85, now + 0.35)
-    sub.frequency.exponentialRampToValueAtTime(65, now + 1.1)
-    sub.frequency.exponentialRampToValueAtTime(45, now + 2.2)
-    const subGain = ctx.createGain()
-    subGain.gain.value = 0.6
-
-    const osc1 = ctx.createOscillator()
-    osc1.type = "sawtooth"
-    osc1.frequency.setValueAtTime(34, now)
-    osc1.frequency.exponentialRampToValueAtTime(130, now + 0.35) // su di giri
-    osc1.frequency.exponentialRampToValueAtTime(95, now + 1.1)
-    osc1.frequency.exponentialRampToValueAtTime(58, now + 2.3)
-
-    const osc2 = ctx.createOscillator()
-    osc2.type = "square"
-    osc2.frequency.setValueAtTime(68, now)
-    osc2.frequency.exponentialRampToValueAtTime(260, now + 0.35)
-    osc2.frequency.exponentialRampToValueAtTime(190, now + 1.1)
-    osc2.frequency.exponentialRampToValueAtTime(116, now + 2.3)
-    const osc2Gain = ctx.createGain()
-    osc2Gain.gain.value = 0.3
-
-    const osc3 = ctx.createOscillator()
-    osc3.type = "triangle"
-    osc3.frequency.setValueAtTime(102, now)
-    osc3.frequency.exponentialRampToValueAtTime(390, now + 0.35)
-    osc3.frequency.exponentialRampToValueAtTime(285, now + 1.1)
-    osc3.frequency.exponentialRampToValueAtTime(174, now + 2.3)
-    const osc3Gain = ctx.createGain()
-    osc3Gain.gain.value = 0.16
-
-    // Cylinder pulse / firing throb
-    const pulse = ctx.createOscillator()
-    pulse.type = "square"
-    pulse.frequency.setValueAtTime(18, now)
-    pulse.frequency.linearRampToValueAtTime(28, now + 0.4) // accelera
-    pulse.frequency.linearRampToValueAtTime(14, now + 2.0)
-    const pulseGain = ctx.createGain()
-    pulseGain.gain.setValueAtTime(0.4, now)
-    pulseGain.gain.linearRampToValueAtTime(0.22, now + 1.8)
-    const pulseOffset = ctx.createConstantSource()
-    pulseOffset.offset.setValueAtTime(0.7, now)
-    const pulseMix = ctx.createGain()
-    pulseMix.gain.value = 1
-    pulse.connect(pulseGain)
-    pulseGain.connect(pulseMix.gain)
-    pulseOffset.connect(pulseMix.gain)
-    pulseMix.connect(body.gain)
-
-    // Rev flutter / instability (scoppiettio feel)
-    const flutter = ctx.createOscillator()
-    flutter.type = "sawtooth"
-    flutter.frequency.setValueAtTime(9, now)
-    flutter.frequency.linearRampToValueAtTime(5.5, now + 2.0)
-    const flutterGain = ctx.createGain()
-    flutterGain.gain.setValueAtTime(24, now)
-    flutterGain.gain.linearRampToValueAtTime(10, now + 2.0)
-    flutter.connect(flutterGain)
-    flutterGain.connect(osc1.frequency)
-    flutterGain.connect(osc2.frequency)
-
-    const lfo = ctx.createOscillator()
-    lfo.type = "sine"
-    lfo.frequency.setValueAtTime(11, now)
-    lfo.frequency.linearRampToValueAtTime(7.5, now + 1.8)
-    const lfoGain = ctx.createGain()
-    lfoGain.gain.setValueAtTime(20, now)
-    lfoGain.gain.linearRampToValueAtTime(8, now + 1.8)
-    lfo.connect(lfoGain)
-    lfoGain.connect(osc1.frequency)
-    const lfoGain2 = ctx.createGain()
-    lfoGain2.gain.setValueAtTime(28, now)
-    lfoGain2.gain.linearRampToValueAtTime(10, now + 1.8)
-    lfo.connect(lfoGain2)
-    lfoGain2.connect(osc2.frequency)
-
-    const rumbleGain = ctx.createGain()
-    rumbleGain.gain.value = 0.9
-    sub.connect(subGain)
-    subGain.connect(rumbleGain)
-    osc1.connect(rumbleGain)
-    osc2.connect(osc2Gain)
-    osc2Gain.connect(rumbleGain)
-    osc3.connect(osc3Gain)
-    osc3Gain.connect(rumbleGain)
-    rumbleGain.connect(body)
-
-    // Exhaust growl noise
-    const nLen = Math.floor(ctx.sampleRate * 2.0)
-    const nBuf = ctx.createBuffer(1, nLen, ctx.sampleRate)
-    const nd = nBuf.getChannelData(0)
-    for (let i = 0; i < nLen; i++) nd[i] = Math.random() * 2 - 1
-    const nSrc = ctx.createBufferSource()
-    nSrc.buffer = nBuf
-    nSrc.loop = true
-    const nBp = ctx.createBiquadFilter()
-    nBp.type = "bandpass"
-    nBp.frequency.setValueAtTime(140, now)
-    nBp.frequency.exponentialRampToValueAtTime(520, now + 0.4)
-    nBp.frequency.exponentialRampToValueAtTime(320, now + 1.8)
-    nBp.Q.value = 1.0
-    const nLp = ctx.createBiquadFilter()
-    nLp.type = "lowpass"
-    nLp.frequency.value = 900
-    const nGain = ctx.createGain()
-    nGain.gain.setValueAtTime(0.16, now)
-    nGain.gain.exponentialRampToValueAtTime(0.09, now + 0.5)
-    nGain.gain.exponentialRampToValueAtTime(0.06, now + 2.0)
-    nSrc.connect(nBp)
-    nBp.connect(nLp)
-    nLp.connect(nGain)
-    nGain.connect(lowpass)
-
-    // Starter/crank burst
-    const cLen = Math.floor(ctx.sampleRate * 0.6)
-    const cBuf = ctx.createBuffer(1, cLen, ctx.sampleRate)
-    const cd = cBuf.getChannelData(0)
-    for (let i = 0; i < cLen; i++) cd[i] = (Math.random() * 2 - 1) * (1 - i / cLen)
-    const cSrc = ctx.createBufferSource()
-    cSrc.buffer = cBuf
-    const cBp = ctx.createBiquadFilter()
-    cBp.type = "bandpass"
-    cBp.frequency.setValueAtTime(220, now)
-    cBp.frequency.exponentialRampToValueAtTime(900, now + 0.3)
-    cBp.Q.value = 1.1
-    const cGain = ctx.createGain()
-    cGain.gain.setValueAtTime(0.26, now)
-    cGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.5)
-    cSrc.connect(cBp)
-    cBp.connect(cGain)
-    cGain.connect(master)
-
-    sub.start(now)
-    osc1.start(now)
-    osc2.start(now)
-    osc3.start(now)
-    pulse.start(now)
-    pulseOffset.start(now)
-    flutter.start(now)
-    lfo.start(now)
-    nSrc.start(now)
-    cSrc.start(now)
-
-    engineNodesRef.current = { osc: osc1, gain: master, lfo, lfoGain }
-    ;(engineNodesRef.current as any).sub = sub
-    ;(engineNodesRef.current as any).osc2 = osc2
-    ;(engineNodesRef.current as any).osc3 = osc3
-    ;(engineNodesRef.current as any).osc2Gain = osc2Gain
-    ;(engineNodesRef.current as any).osc3Gain = osc3Gain
-    ;(engineNodesRef.current as any).pulse = pulse
-    ;(engineNodesRef.current as any).pulseGain = pulseGain
-    ;(engineNodesRef.current as any).pulseOffset = pulseOffset
-    ;(engineNodesRef.current as any).flutter = flutter
-    ;(engineNodesRef.current as any).flutterGain = flutterGain
-    ;(engineNodesRef.current as any).lfoGain2 = lfoGain2
-    ;(engineNodesRef.current as any).nSrc = nSrc
-    ;(engineNodesRef.current as any).cSrc = cSrc
-
-    // Scoppiettii/sputter mentre va su di giri e al minimo
-    playEnginePop(1.1)
-    if (engineIntervalRef.current != null) window.clearInterval(engineIntervalRef.current)
-    engineIntervalRef.current = window.setInterval(() => {
-      if (!engineOnRef.current) return
-      playEnginePop(0.7 + Math.random() * 0.8)
-      if (Math.random() > 0.55) {
-        window.setTimeout(() => {
-          if (engineOnRef.current) playEnginePop(0.5 + Math.random() * 0.7)
-        }, 40 + Math.random() * 90)
-      }
-    }, 180)
-  }
-
-  const stopEngineAudio = () => {
-    if (engineIntervalRef.current != null) {
-      window.clearInterval(engineIntervalRef.current)
-      engineIntervalRef.current = null
-    }
-    const nodes = engineNodesRef.current as any
-    const ctx = audioCtxRef.current
-    if (!nodes || !ctx) return
-    const now = ctx.currentTime
-    nodes.gain.gain.cancelScheduledValues(now)
-    nodes.gain.gain.setValueAtTime(Math.max(nodes.gain.gain.value, 0.0001), now)
-    nodes.gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.5)
-    const stopAt = now + 0.55
-    try { nodes.sub?.stop(stopAt) } catch {}
-    try { nodes.osc.stop(stopAt) } catch {}
-    try { nodes.osc2?.stop(stopAt) } catch {}
-    try { nodes.osc3?.stop(stopAt) } catch {}
-    try { nodes.pulse?.stop(stopAt) } catch {}
-    try { nodes.pulseOffset?.stop(stopAt) } catch {}
-    try { nodes.flutter?.stop(stopAt) } catch {}
-    try { nodes.lfo.stop(stopAt) } catch {}
-    try { nodes.nSrc?.stop(stopAt) } catch {}
-    try { nodes.cSrc?.stop(now + 0.1) } catch {}
-    engineNodesRef.current = null
-  }
-
-  useEffect(() => {
-    if (repairing) startRepairAudio()
-    else stopRepairAudio()
-    return () => stopRepairAudio()
-  }, [repairing])
-
-  useEffect(() => {
-    if (engineOn) startEngineAudio()
-    else stopEngineAudio()
-    return () => stopEngineAudio()
-  }, [engineOn])
-
-  useEffect(() => {
-    return () => {
-      stopRepairAudio()
-      stopEngineAudio()
-      if (audioCtxRef.current) {
-        void audioCtxRef.current.close()
-        audioCtxRef.current = null
-      }
-    }
-  }, [])
 
   useEffect(() => {
     const container = containerRef.current
     if (!container) return
 
-    const prefersReducedMotion = window.matchMedia(
+    const reduced = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     ).matches
 
     const scene = new THREE.Scene()
-    scene.background = new THREE.Color(0x171311)
-    scene.fog = new THREE.Fog(0x171311, 8, 18)
+    scene.background = new THREE.Color(0x120f0d)
+    scene.fog = new THREE.Fog(0x120f0d, 12, 28)
 
-    const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100)
-    camera.position.set(4.8, 2.8, 5.6)
-    camera.lookAt(0, 0.6, 0)
+    const camera = new THREE.PerspectiveCamera(46, 1, 0.1, 100)
+    const cameraRadius = 7.2
+    const baseAngle = 0.05
+    camera.position.set(
+      Math.sin(baseAngle) * cameraRadius,
+      2.45,
+      Math.cos(baseAngle) * cameraRadius,
+    )
+    camera.lookAt(0, 0.85, 0)
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false })
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2))
     renderer.shadowMap.enabled = true
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap
+    renderer.shadowMap.type = THREE.PCFShadowMap
+    renderer.toneMapping = THREE.ACESFilmicToneMapping
+    renderer.toneMappingExposure = 1.14
     container.appendChild(renderer.domElement)
 
-    const ambient = new THREE.AmbientLight(0xfff1e6, 0.6)
-    scene.add(ambient)
+    // --- Layout groups -----------------------------------------------------
+    const props = new THREE.Group()
+    scene.add(props)
 
-    const keyLight = new THREE.SpotLight(0xffd7a8, 22, 20, Math.PI / 5, 0.45, 1)
-    keyLight.position.set(2, 6, 4)
-    keyLight.castShadow = true
-    keyLight.shadow.mapSize.width = 1024
-    keyLight.shadow.mapSize.height = 1024
-    keyLight.target.position.set(0, 0.5, 0)
-    scene.add(keyLight)
-    scene.add(keyLight.target)
+    const disposables: Array<THREE.BufferGeometry | THREE.Material | THREE.Texture> =
+      []
+    const track =
+      <T extends THREE.BufferGeometry | THREE.Material | THREE.Texture,>(
+        item: T,
+      ) => {
+        disposables.push(item)
+        return item
+      }
 
-    const fillLight = new THREE.PointLight(0x7dd3fc, 5, 12)
-    fillLight.position.set(-4, 2.5, -2)
-    scene.add(fillLight)
+    const standard = (params: THREE.MeshStandardMaterialParameters) =>
+      track(new THREE.MeshStandardMaterial(params))
 
-    const rimLight = new THREE.DirectionalLight(0xffffff, 0.8)
-    rimLight.position.set(-3, 3, 5)
-    scene.add(rimLight)
-
+    // --- Floor -------------------------------------------------------------
+    const floorMat = standard({
+      color: 0x201c19,
+      roughness: 0.88,
+      metalness: 0.12,
+    })
     const floor = new THREE.Mesh(
-      new THREE.PlaneGeometry(20, 20),
-      new THREE.MeshStandardMaterial({ color: 0x2a2522, roughness: 0.95, metalness: 0.05 }),
+      track(new THREE.PlaneGeometry(40, 40)),
+      floorMat,
     )
     floor.rotation.x = -Math.PI / 2
     floor.receiveShadow = true
     scene.add(floor)
 
-    const platform = new THREE.Mesh(
-      new THREE.BoxGeometry(6.2, 0.18, 3.4),
-      new THREE.MeshStandardMaterial({ color: 0x3a312c, roughness: 0.8 }),
+    const bayMat = track(
+      new THREE.MeshBasicMaterial({
+        color: 0xd9772f,
+        transparent: true,
+        opacity: 0.5,
+      }),
     )
-    platform.position.y = 0.09
+    const bayWidth = 8.6
+    const bayDepth = 6.0
+    const lineThickness = 0.05
+    const bayParts: Array<[number, number, number, number]> = [
+      [bayWidth, lineThickness, 0, bayDepth / 2],
+      [bayWidth, lineThickness, 0, -bayDepth / 2],
+      [lineThickness, bayDepth, bayWidth / 2, 0],
+      [lineThickness, bayDepth, -bayWidth / 2, 0],
+    ]
+    bayParts.forEach(([w, d, x, z]) => {
+      const strip = new THREE.Mesh(track(new THREE.PlaneGeometry(w, d)), bayMat)
+      strip.rotation.x = -Math.PI / 2
+      strip.position.set(x, 0.006, z)
+      scene.add(strip)
+    })
+
+    // --- Back and side walls ------------------------------------------------
+    const wallMat = standard({
+      color: 0x262120,
+      roughness: 0.95,
+      metalness: 0.05,
+    })
+    const backWall = new THREE.Mesh(
+      track(new THREE.PlaneGeometry(40, 10)),
+      wallMat,
+    )
+    backWall.position.set(0, 4.2, -7)
+    scene.add(backWall)
+
+    const sideWall = new THREE.Mesh(
+      track(new THREE.PlaneGeometry(24, 10)),
+      wallMat,
+    )
+    sideWall.position.set(-11, 4.2, 0)
+    sideWall.rotation.y = Math.PI / 2
+    scene.add(sideWall)
+
+    const baseboardMat = standard({ color: 0x120e0c, roughness: 0.9 })
+    const baseboard = new THREE.Mesh(
+      track(new THREE.BoxGeometry(40, 0.28, 0.12)),
+      baseboardMat,
+    )
+    baseboard.position.set(0, 0.14, -6.94)
+    scene.add(baseboard)
+
+    const accentStrip = new THREE.Mesh(
+      track(new THREE.BoxGeometry(40, 0.03, 0.03)),
+      track(
+        new THREE.MeshBasicMaterial({
+          color: 0xef5b2a,
+          transparent: true,
+          opacity: 0.55,
+        }),
+      ),
+    )
+    accentStrip.position.set(0, 0.3, -6.87)
+    scene.add(accentStrip)
+
+    // --- Brand sign on the back wall ---------------------------------------
+    const signTexture = createSignTexture()
+    if (signTexture) {
+      track(signTexture)
+      const sign = new THREE.Mesh(
+        track(new THREE.PlaneGeometry(5.6, 1.4)),
+        track(
+          new THREE.MeshBasicMaterial({
+            map: signTexture,
+            transparent: true,
+            toneMapped: false,
+          }),
+        ),
+      )
+      sign.position.set(0, 3.5, -6.9)
+      scene.add(sign)
+
+      const signGlow = new THREE.PointLight(0xffb877, 6, 7, 2)
+      signGlow.position.set(0, 3.3, -5.6)
+      scene.add(signGlow)
+    }
+
+    // --- Turntable platform -------------------------------------------------
+    const steelMat = standard({
+      color: 0xb9bec6,
+      roughness: 0.35,
+      metalness: 0.9,
+    })
+    const platformMat = standard({
+      color: 0x35302c,
+      roughness: 0.55,
+      metalness: 0.6,
+    })
+    const platform = new THREE.Mesh(
+      track(new THREE.CylinderGeometry(2.9, 3.0, 0.16, 72)),
+      platformMat,
+    )
+    platform.position.y = 0.08
     platform.receiveShadow = true
+    platform.castShadow = true
     scene.add(platform)
 
-    const wall = new THREE.Mesh(
-      new THREE.PlaneGeometry(20, 8),
-      new THREE.MeshStandardMaterial({ color: 0x1f1a18, roughness: 1 }),
+    const platformTop = new THREE.Mesh(
+      track(new THREE.CylinderGeometry(2.86, 2.86, 0.02, 72)),
+      standard({ color: 0x2b2724, roughness: 0.7, metalness: 0.5 }),
     )
-    wall.position.set(0, 3.2, -4)
-    scene.add(wall)
+    platformTop.position.y = 0.17
+    platformTop.receiveShadow = true
+    scene.add(platformTop)
 
+    const ring = new THREE.Mesh(
+      track(new THREE.TorusGeometry(2.91, 0.025, 8, 96)),
+      track(
+        new THREE.MeshBasicMaterial({
+          color: 0xef5b2a,
+          transparent: true,
+          opacity: 0.5,
+        }),
+      ),
+    )
+    ring.rotation.x = Math.PI / 2
+    ring.position.y = 0.17
+    scene.add(ring)
+
+    // --- Bench materials ----------------------------------------------------
+    const chestDark = standard({
+      color: 0x6f2419,
+      roughness: 0.6,
+      metalness: 0.3,
+    })
+
+    // --- Workbench ----------------------------------------------------------
+    const bench = new THREE.Group()
+    bench.position.set(-4.35, 0, -3.95)
+    bench.rotation.y = 0.1
+    scene.add(bench)
+
+    const benchTopMat = standard({ color: 0x6b5844, roughness: 0.8 })
+    const benchTop = new THREE.Mesh(
+      track(new THREE.BoxGeometry(2.4, 0.09, 0.9)),
+      benchTopMat,
+    )
+    benchTop.position.y = 0.98
+    benchTop.castShadow = true
+    benchTop.receiveShadow = true
+    bench.add(benchTop)
+
+    const legMat = standard({ color: 0x2b2a28, roughness: 0.6, metalness: 0.7 })
+    const legGeo = track(new THREE.BoxGeometry(0.08, 0.98, 0.08))
+    const legOffsets: Array<[number, number]> = [
+      [-1.08, -0.36],
+      [1.08, -0.36],
+      [-1.08, 0.36],
+      [1.08, 0.36],
+    ]
+    legOffsets.forEach(([x, z]) => {
+      const leg = new THREE.Mesh(legGeo, legMat)
+      leg.position.set(x, 0.49, z)
+      leg.castShadow = true
+      bench.add(leg)
+    })
+
+    const vise = new THREE.Mesh(
+      track(new THREE.BoxGeometry(0.34, 0.22, 0.24)),
+      legMat,
+    )
+    vise.position.set(0.78, 1.13, 0)
+    vise.castShadow = true
+    bench.add(vise)
+
+    const toolTray = new THREE.Mesh(
+      track(new THREE.BoxGeometry(0.6, 0.04, 0.34)),
+      chestDark,
+    )
+    toolTray.position.set(-0.62, 1.02, 0.12)
+    bench.add(toolTray)
+
+    for (let i = 0; i < 4; i += 1) {
+      const tool = new THREE.Mesh(
+        track(new THREE.CylinderGeometry(0.022, 0.022, 0.3, 8)),
+        steelMat,
+      )
+      tool.rotation.z = Math.PI / 2
+      tool.position.set(-0.72 + i * 0.07, 1.06, 0.12 + i * 0.04)
+      bench.add(tool)
+    }
+
+    const boardMat = standard({
+      color: 0x2f3236,
+      roughness: 0.7,
+      metalness: 0.5,
+    })
+    const board = new THREE.Mesh(
+      track(new THREE.BoxGeometry(2.9, 2.0, 0.1)),
+      boardMat,
+    )
+    board.position.set(4.05, 2.75, -6.86)
+    board.castShadow = true
+    board.receiveShadow = true
+    scene.add(board)
+
+    const boardFrameMat = standard({
+      color: 0x17191b,
+      roughness: 0.55,
+      metalness: 0.7,
+    })
+    const frameParts: Array<[number, number, number, number]> = [
+      [2.98, 0.08, 4.05, 3.79],
+      [2.98, 0.08, 4.05, 1.71],
+      [0.08, 2.0, 2.58, 2.75],
+      [0.08, 2.0, 5.52, 2.75],
+    ]
+    frameParts.forEach(([w, h, x, y]) => {
+      const part = new THREE.Mesh(
+        track(new THREE.BoxGeometry(w, h, 0.12)),
+        boardFrameMat,
+      )
+      part.position.set(x, y, -6.8)
+      part.castShadow = true
+      scene.add(part)
+    })
+
+    const addWrench = (x: number, y: number, angle: number, scale = 1) => {
+      const wrench = new THREE.Group()
+      const handle = new THREE.Mesh(
+        track(new THREE.BoxGeometry(0.055, 0.62, 0.035)),
+        steelMat,
+      )
+      handle.position.y = -0.16
+      const head = new THREE.Mesh(
+        track(new THREE.TorusGeometry(0.1, 0.032, 8, 18)),
+        steelMat,
+      )
+      head.position.y = 0.2
+      const tip = new THREE.Mesh(
+        track(new THREE.BoxGeometry(0.13, 0.07, 0.035)),
+        steelMat,
+      )
+      tip.position.y = -0.47
+      wrench.add(handle, head, tip)
+      wrench.position.set(x, y, -6.76)
+      wrench.rotation.z = angle
+      wrench.scale.setScalar(scale)
+      scene.add(wrench)
+    }
+    addWrench(3.4, 3.15, 0.12)
+    addWrench(4.7, 3.15, -0.12)
+
+    const addScrewdriver = (
+      x: number,
+      y: number,
+      color: number,
+      angle: number,
+    ) => {
+      const screwdriver = new THREE.Group()
+      const gripMat = standard({ color, roughness: 0.55 })
+      const grip = new THREE.Mesh(
+        track(new THREE.CylinderGeometry(0.065, 0.055, 0.26, 12)),
+        gripMat,
+      )
+      grip.position.y = 0.12
+      const shaft = new THREE.Mesh(
+        track(new THREE.CylinderGeometry(0.018, 0.018, 0.44, 10)),
+        steelMat,
+      )
+      shaft.position.y = -0.22
+      screwdriver.add(grip, shaft)
+      screwdriver.position.set(x, y, -6.76)
+      screwdriver.rotation.z = angle
+      scene.add(screwdriver)
+    }
+    addScrewdriver(3.78, 2.55, 0xc23b28, 0.08)
+    addScrewdriver(4.28, 2.55, 0x24425e, -0.08)
+
+    const hammer = new THREE.Group()
+    const hammerHandle = new THREE.Mesh(
+      track(new THREE.CylinderGeometry(0.032, 0.038, 0.68, 10)),
+      standard({ color: 0x8a5a33, roughness: 0.85 }),
+    )
+    const hammerHead = new THREE.Mesh(
+      track(new THREE.BoxGeometry(0.34, 0.1, 0.1)),
+      steelMat,
+    )
+    hammerHead.position.y = 0.32
+    hammer.add(hammerHandle, hammerHead)
+    hammer.position.set(4.95, 2.55, -6.76)
+    hammer.rotation.z = -0.15
+    scene.add(hammer)
+
+    const pliers = new THREE.Group()
+    const plierGeo = track(new THREE.BoxGeometry(0.045, 0.62, 0.035))
+    const leftHalf = new THREE.Mesh(plierGeo, steelMat)
+    leftHalf.rotation.z = 0.22
+    leftHalf.position.set(-0.04, -0.02, 0)
+    const rightHalf = new THREE.Mesh(plierGeo, steelMat)
+    rightHalf.rotation.z = -0.22
+    rightHalf.position.set(0.04, -0.02, 0)
+    pliers.add(leftHalf, rightHalf)
+    pliers.position.set(3.05, 2.3, -6.76)
+    pliers.rotation.z = 0.1
+    scene.add(pliers)
+
+    const cabinetMat = standard({
+      color: 0xa83324,
+      roughness: 0.5,
+      metalness: 0.45,
+    })
+    const cabinet = new THREE.Group()
+    cabinet.position.set(4.0, 0, -3.3)
+    cabinet.rotation.y = -0.12
+    scene.add(cabinet)
+
+    const cabinetBody = new THREE.Mesh(
+      track(new THREE.BoxGeometry(1.65, 1.05, 0.68)),
+      cabinetMat,
+    )
+    cabinetBody.position.y = 0.63
+    cabinetBody.castShadow = true
+    cabinetBody.receiveShadow = true
+    cabinet.add(cabinetBody)
+
+    const drawerGeo = track(new THREE.BoxGeometry(1.5, 0.26, 0.045))
+    const handleGeo = track(new THREE.BoxGeometry(0.42, 0.045, 0.055))
+    for (let i = 0; i < 3; i += 1) {
+      const drawer = new THREE.Mesh(drawerGeo, chestDark)
+      drawer.position.set(0, 0.36 + i * 0.29, 0.36)
+      cabinet.add(drawer)
+
+      const handle = new THREE.Mesh(handleGeo, steelMat)
+      handle.position.set(0, 0.36 + i * 0.29, 0.4)
+      cabinet.add(handle)
+    }
+
+    const cabinetLegGeo = track(new THREE.BoxGeometry(0.08, 0.18, 0.08))
+    const cabinetLegSpots: Array<[number, number]> = [
+      [-0.7, -0.24],
+      [0.7, -0.24],
+      [-0.7, 0.24],
+      [0.7, 0.24],
+    ]
+    cabinetLegSpots.forEach(([x, z]) => {
+      const leg = new THREE.Mesh(cabinetLegGeo, legMat)
+      leg.position.set(x, 0.09, z)
+      leg.castShadow = true
+      cabinet.add(leg)
+    })
+
+    const topTool = new THREE.Mesh(
+      track(new THREE.BoxGeometry(0.06, 0.78, 0.04)),
+      steelMat,
+    )
+    topTool.position.set(-0.32, 1.22, 0.05)
+    topTool.rotation.z = Math.PI / 2
+    cabinet.add(topTool)
+
+    const topSocket = new THREE.Mesh(
+      track(new THREE.CylinderGeometry(0.13, 0.13, 0.22, 6)),
+      steelMat,
+    )
+    topSocket.position.set(0.42, 1.25, -0.05)
+    cabinet.add(topSocket)
+
+    // --- Oil drums ----------------------------------------------------------
+    const drumMat = standard({
+      color: 0x24425e,
+      roughness: 0.55,
+      metalness: 0.5,
+    })
+    const drumGeo = track(new THREE.CylinderGeometry(0.31, 0.31, 0.92, 28))
+    const drumSpots: Array<[number, number]> = [
+      [4.75, -2.55],
+      [5.2, -2.15],
+    ]
+    drumSpots.forEach(([x, z], index) => {
+      const drum = new THREE.Mesh(drumGeo, drumMat)
+      drum.position.set(x, 0.46, z)
+      drum.rotation.y = index * 0.6
+      drum.castShadow = true
+      drum.receiveShadow = true
+      props.add(drum)
+
+      const drumBand = new THREE.Mesh(
+        track(new THREE.TorusGeometry(0.315, 0.018, 8, 28)),
+        standard({ color: 0x16283a, roughness: 0.6, metalness: 0.55 }),
+      )
+      drumBand.rotation.x = Math.PI / 2
+      drumBand.position.set(x, 0.7, z)
+      props.add(drumBand)
+    })
+
+    // --- Hydraulic jack -----------------------------------------------------
+    const jackMat = standard({
+      color: 0xc23b28,
+      roughness: 0.55,
+      metalness: 0.5,
+    })
+    const jack = new THREE.Group()
+    jack.position.set(3.4, 0, -2.6)
+    jack.rotation.y = -0.5
+    scene.add(jack)
+
+    const jackBase = new THREE.Mesh(
+      track(new THREE.BoxGeometry(0.9, 0.16, 0.42)),
+      jackMat,
+    )
+    jackBase.position.y = 0.08
+    jackBase.castShadow = true
+    jack.add(jackBase)
+
+    const jackArm = new THREE.Mesh(
+      track(new THREE.BoxGeometry(0.8, 0.08, 0.14)),
+      jackMat,
+    )
+    jackArm.position.set(0.1, 0.4, 0)
+    jackArm.rotation.z = 0.42
+    jackArm.castShadow = true
+    jack.add(jackArm)
+
+    const jackHandle = new THREE.Mesh(
+      track(new THREE.CylinderGeometry(0.03, 0.03, 1.0, 10)),
+      legMat,
+    )
+    jackHandle.position.set(-0.2, 0.6, 0)
+    jackHandle.rotation.z = 0.5
+    jack.add(jackHandle)
+
+    // --- Overhead lamps -----------------------------------------------------
+    const lampHousingMat = standard({
+      color: 0x181513,
+      roughness: 0.6,
+      metalness: 0.6,
+    })
+    const lampGlowMat = track(
+      new THREE.MeshBasicMaterial({ color: 0xffe2b5, toneMapped: false }),
+    )
+    const coneMat = track(
+      new THREE.MeshBasicMaterial({
+        color: 0xffd39a,
+        transparent: true,
+        opacity: 0.045,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+        blending: THREE.AdditiveBlending,
+      }),
+    )
+    const spotlightTargets: THREE.SpotLight[] = []
+    const lampPositions: Array<[number, number]> = [
+      [-2.7, 0.6],
+      [0, 0.9],
+      [2.7, 0.6],
+    ]
+    lampPositions.forEach(([x, z], index) => {
+      const housing = new THREE.Mesh(
+        track(new THREE.ConeGeometry(0.3, 0.34, 20, 1, true)),
+        lampHousingMat,
+      )
+      housing.position.set(x, 5.3, z)
+      housing.rotation.x = Math.PI
+      scene.add(housing)
+
+      const bulb = new THREE.Mesh(
+        track(new THREE.CircleGeometry(0.19, 20)),
+        lampGlowMat,
+      )
+      bulb.rotation.x = Math.PI / 2
+      bulb.position.set(x, 5.14, z)
+      scene.add(bulb)
+
+      const cone = new THREE.Mesh(
+        track(new THREE.ConeGeometry(1.5, 4.6, 28, 1, true)),
+        coneMat,
+      )
+      cone.position.set(x, 2.85, z)
+      scene.add(cone)
+
+      const spot = new THREE.SpotLight(
+        0xffd2a0,
+        index === 1 ? 34 : 20,
+        16,
+        0.55,
+        0.55,
+        1.4,
+      )
+      spot.position.set(x, 5.15, z)
+      spot.target.position.set(x * 0.4, 0, z * 0.4)
+      if (index === 1) {
+        spot.castShadow = true
+        spot.shadow.mapSize.width = 1024
+        spot.shadow.mapSize.height = 1024
+        spot.shadow.bias = -0.0015
+      }
+      scene.add(spot)
+      scene.add(spot.target)
+      spotlightTargets.push(spot)
+    })
+
+    // --- Ambient lighting ---------------------------------------------------
+    scene.add(new THREE.AmbientLight(0xffe9d1, 0.42))
+
+    const coolRim = new THREE.DirectionalLight(0x9fc6ff, 0.55)
+    coolRim.position.set(-6, 5, 4)
+    scene.add(coolRim)
+
+    const warmAccent = new THREE.PointLight(0xff7a3a, 7, 9, 2)
+    warmAccent.position.set(-4.2, 1.5, 3.2)
+    scene.add(warmAccent)
+
+    const backFill = new THREE.PointLight(0xffc38a, 4, 10, 2)
+    backFill.position.set(2.8, 2.2, -4.6)
+    scene.add(backFill)
+
+    // --- Dust motes ---------------------------------------------------------
+    const dustCount = 160
+    const dustPositions = new Float32Array(dustCount * 3)
+    const dustSpeeds = new Float32Array(dustCount)
+    for (let i = 0; i < dustCount; i += 1) {
+      dustPositions[i * 3] = (Math.random() - 0.5) * 14
+      dustPositions[i * 3 + 1] = 0.3 + Math.random() * 4.6
+      dustPositions[i * 3 + 2] = -6.4 + Math.random() * 10.5
+      dustSpeeds[i] = 0.05 + Math.random() * 0.12
+    }
+    const dustGeo = track(new THREE.BufferGeometry())
+    dustGeo.setAttribute(
+      "position",
+      new THREE.BufferAttribute(dustPositions, 3),
+    )
+    const dust = new THREE.Points(
+      dustGeo,
+      track(
+        new THREE.PointsMaterial({
+          color: 0xffd9b0,
+          size: 0.035,
+          transparent: true,
+          opacity: 0.55,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending,
+        }),
+      ),
+    )
+    scene.add(dust)
+
+    // --- Car ----------------------------------------------------------------
     const carGroup = new THREE.Group()
     carGroup.position.y = 0.18
     scene.add(carGroup)
 
-    const headlightMats: THREE.MeshStandardMaterial[] = []
-    headlightMatsRef.current = headlightMats
     let raf = 0
     let last = performance.now()
     let disposed = false
 
     const loader = new GLTFLoader()
-    const collectHeadlights = (model: THREE.Object3D) => {
-      model.traverse((obj) => {
-        if ((obj as THREE.Mesh).isMesh) {
-          const mesh = obj as THREE.Mesh
-          const name = mesh.name.toLowerCase()
-          if (name.includes("head") || name.includes("light") || name.includes("lamp") || name.includes("faro")) {
-            const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material]
-            mats.forEach((m) => {
-              if (m && "emissive" in m) headlightMats.push(m as THREE.MeshStandardMaterial)
-            })
-          }
-        }
-      })
-    }
-
     loader.load(
       "/models/jaguar_grigia.glb",
       (gltf) => {
         if (disposed) return
         const model = gltf.scene
         normalizeLoadedCar(model)
-        baseModelRef.current = model
+        model.traverse((obj) => {
+          const mesh = obj as THREE.Mesh
+          if (mesh.isMesh) {
+            const mats = Array.isArray(mesh.material)
+              ? mesh.material
+              : [mesh.material]
+            mats.forEach((m) => track(m))
+          }
+        })
         carGroup.add(model)
-        collectHeadlights(model)
-        setModelReady(true)
       },
       undefined,
       (err) => {
         if (disposed) return
         console.error("Errore caricamento modello auto:", err)
-        setModelError("Impossibile caricare il modello 3D dell’auto.")
       },
     )
 
-    loader.load(
-      "/models/jaguar_sorridente_grigia.glb",
-      (gltf) => {
-        if (disposed) return
-        const model = gltf.scene
-        normalizeLoadedCar(model)
-        model.visible = false
-        smileModelRef.current = model
-        carGroup.add(model)
-        collectHeadlights(model)
-      },
-      undefined,
-      (err) => {
-        if (disposed) return
-        console.error("Errore caricamento modello auto sorridente:", err)
-      },
-    )
+    // --- Pointer parallax ---------------------------------------------------
+    const pointer = { x: 0, y: 0 }
+    const pointerTarget = { x: 0, y: 0 }
+    const onPointerMove = (event: PointerEvent) => {
+      const rect = container.getBoundingClientRect()
+      pointerTarget.x = ((event.clientX - rect.left) / rect.width) * 2 - 1
+      pointerTarget.y = ((event.clientY - rect.top) / rect.height) * 2 - 1
+    }
+    const onPointerLeave = () => {
+      pointerTarget.x = 0
+      pointerTarget.y = 0
+    }
+    if (!reduced) {
+      container.addEventListener("pointermove", onPointerMove)
+      container.addEventListener("pointerleave", onPointerLeave)
+    }
 
+    // --- Resize -------------------------------------------------------------
     const resize = () => {
       const { width, height } = container.getBoundingClientRect()
       const w = Math.max(1, Math.floor(width))
@@ -638,36 +729,39 @@ export function WorkshopScene() {
     ro.observe(container)
     resize()
 
+    // --- Loop ---------------------------------------------------------------
     const animate = (now: number) => {
       raf = window.requestAnimationFrame(animate)
       const dt = Math.min((now - last) / 1000, 0.05)
       last = now
 
-      if (!prefersReducedMotion) {
-        const t = now * 0.0004
-        camera.position.x = 4.8 + Math.sin(t) * 0.18
-        camera.position.z = 5.6 + Math.cos(t) * 0.18
-        camera.lookAt(0, 0.7, 0)
+      if (!reduced) {
+        pointer.x += (pointerTarget.x - pointer.x) * 0.05
+        pointer.y += (pointerTarget.y - pointer.y) * 0.05
 
-        if (engineOnRef.current) {
-          carGroup.rotation.y += dt * 0.7
-          carGroup.position.y = 0.18 + Math.sin(now * 0.03) * 0.008
-        } else if (repairingRef.current) {
-          carGroup.rotation.y += dt * 0.35
-          carGroup.position.y += (0.18 - carGroup.position.y) * 0.1
-        } else {
-          carGroup.rotation.y += dt * 0.12
-          carGroup.position.y += (0.18 - carGroup.position.y) * 0.1
+        const sway = Math.sin(now * 0.00018) * 0.06
+        const angle = baseAngle + sway + pointer.x * 0.08
+        camera.position.x = Math.sin(angle) * cameraRadius
+        camera.position.z = Math.cos(angle) * cameraRadius
+        camera.position.y = 2.45 - pointer.y * 0.24
+        camera.lookAt(0.1, 0.88, 0)
+
+        carGroup.rotation.y += dt * 0.1
+
+        const position = dustGeo.getAttribute(
+          "position",
+        ) as THREE.BufferAttribute
+        const array = position.array as Float32Array
+        for (let i = 0; i < dustCount; i += 1) {
+          array[i * 3 + 1] += dustSpeeds[i] * dt
+          if (array[i * 3 + 1] > 5.2) array[i * 3 + 1] = 0.25
         }
+        position.needsUpdate = true
       }
 
-      const showSmile = engineOnRef.current && repairedRef.current
-      if (baseModelRef.current) baseModelRef.current.visible = !showSmile
-      if (smileModelRef.current) smileModelRef.current.visible = showSmile
-
-      const headlightsOn = engineOnRef.current
-      headlightMats.forEach((mat) => {
-        mat.emissiveIntensity = headlightsOn ? 1.8 : (mat.emissiveIntensity || 0.2)
+      spotlightTargets.forEach((spot, index) => {
+        spot.intensity =
+          (index === 1 ? 34 : 20) + Math.sin(now * 0.001 + index) * 0.9
       })
 
       renderer.render(scene, camera)
@@ -679,13 +773,18 @@ export function WorkshopScene() {
       disposed = true
       window.cancelAnimationFrame(raf)
       ro.disconnect()
+      container.removeEventListener("pointermove", onPointerMove)
+      container.removeEventListener("pointerleave", onPointerLeave)
       scene.traverse((obj) => {
         if (obj instanceof THREE.Mesh) {
           obj.geometry.dispose()
-          const mats = Array.isArray(obj.material) ? obj.material : [obj.material]
-          mats.forEach((m) => m && m.dispose())
+          const mats = Array.isArray(obj.material)
+            ? obj.material
+            : [obj.material]
+          mats.forEach((m) => m.dispose())
         }
       })
+      disposables.forEach((item) => item.dispose())
       renderer.dispose()
       if (renderer.domElement.parentNode === container) {
         container.removeChild(renderer.domElement)
@@ -693,81 +792,13 @@ export function WorkshopScene() {
     }
   }, [])
 
-  useEffect(() => {
-    if (!repairing) return
-    setProgress(0)
-    let value = 0
-    const id = window.setInterval(() => {
-      value += 8
-      if (value >= 100) {
-        value = 100
-        window.clearInterval(id)
-        setRepairing(false)
-        setRepaired(true)
-      }
-      setProgress(value)
-    }, 180)
-    return () => window.clearInterval(id)
-  }, [repairing])
-
-  const onRepair = () => {
-    if (repairing || repaired) return
-    setRepairing(true)
-  }
-
-  const onToggleEngine = () => {
-    if (!repaired) return
-    setEngineOn((v) => !v)
-  }
-
   return (
     <div className="workshop-scene">
-      <div className="workshop-scene__viewport" ref={containerRef} aria-hidden="true" />
-      <div className="workshop-scene__hud" aria-live="polite">
-        <p className="workshop-scene__status">
-          {modelError && modelError}
-          {!modelError && !modelReady && "Caricamento dell’auto 3D in corso…"}
-          {!modelError && modelReady && !repaired && !repairing && "Auto in attesa di intervento."}
-          {!modelError && modelReady && repairing && `Riparazione in corso… ${progress}%`}
-          {!modelError && modelReady && repaired && !engineOn && "Riparazione completata. Pronta all'accensione."}
-          {!modelError && modelReady && repaired && engineOn && "Motore acceso."}
-        </p>
-        <div className="workshop-scene__actions">
-          <button
-            type="button"
-            className={`ignition-control ignition-control--service ${repaired ? "is-ready" : ""}`}
-            onClick={onRepair}
-            disabled={!modelReady || !!modelError || repairing || repaired}
-            aria-label={repaired ? "Auto riparata" : repairing ? "Riparazione in corso" : "Ripara l’auto"}
-          >
-            <span className="ignition-control__ring">
-              <span className="ignition-control__core" />
-            </span>
-            <span className="ignition-control__label">
-              {repaired ? "Riparata" : repairing ? "Riparazione…" : "Ripara"}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            className={`ignition-control ignition-control--start ${engineOn ? "is-on" : ""}`}
-            onClick={onToggleEngine}
-            disabled={!modelReady || !!modelError || !repaired}
-            aria-label={engineOn ? "Spegni motore" : "Accendi motore"}
-          >
-            <span className="ignition-control__ring ignition-key">
-              <span className="ignition-key__slot" />
-              <span className="ignition-key__tooth" />
-            </span>
-            <span className="ignition-control__label">
-              {engineOn ? "Spegni" : "Avvia"}
-            </span>
-          </button>
-        </div>
-        <p className="workshop-scene__note workshop-scene__note--reveal">
-          Da noi, dopo la riparazione, le auto vestono un nuovo look e vanno via felici.
-        </p>
-      </div>
+      <div
+        className="workshop-scene__viewport"
+        ref={containerRef}
+        aria-hidden="true"
+      />
     </div>
   )
 }

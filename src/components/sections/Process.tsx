@@ -2,13 +2,14 @@ import { useRef } from "react"
 import { Eyebrow } from "@/components/ui/Eyebrow"
 import { processSteps } from "@/content/site"
 import { SectionReveal } from "@/components/ui/SectionReveal"
-import { useScrollReveal, useStaggerReveal } from "@/hooks"
+import { useScrollReveal, useStaggerReveal, useScrollTilt3D } from "@/hooks"
 
 export function Process() {
   const headingRef = useRef<HTMLElement>(null)
   const gridRef = useRef<HTMLElement>(null)
 
   useScrollReveal({ ref: headingRef, fromY: 40, duration: 0.6 })
+  useScrollTilt3D({ ref: headingRef, maxAngle: 10, axis: "y" })
   useStaggerReveal({
     containerRef: gridRef,
     selector: ".process-grid > li",
@@ -32,11 +33,18 @@ export function Process() {
       <ol className="process-grid" ref={gridRef as never}>
         {processSteps.map((step) => (
           <li key={step.number}>
-            <span className="process-number" aria-hidden="true">
-              {step.number}
-            </span>
-            <h3>{step.title}</h3>
-            <p>{step.text}</p>
+            <article className="process-card">
+              <div className="process-card__media">
+                <img src={step.image} alt={step.imageAlt} loading="lazy" />
+              </div>
+              <div className="process-card__body">
+                <span className="process-number" aria-hidden="true">
+                  {step.number}
+                </span>
+                <h3>{step.title}</h3>
+                <p>{step.text}</p>
+              </div>
+            </article>
           </li>
         ))}
       </ol>

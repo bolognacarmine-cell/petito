@@ -30,6 +30,7 @@ react(),
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
+        '@stories': path.resolve(__dirname, './src/stories'),
       },
     },
     server: {
